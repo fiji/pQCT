@@ -1,0 +1,1 @@
+These files are examples of Stratec file format headers.
