@@ -19,32 +19,23 @@
 */
 
 package sc.fiji.pQCT.selectroi;
-public class Coordinate{
-	public double ii;
-	public double jj;
-	/*Constructors*/
-	public Coordinate(){
-		this(-1,-1);
-	}
-	
-	public Coordinate(double ii,double jj){
+
+// TODO Replace with a library class (same as Vector2d)
+class Coordinate {
+
+	double ii;
+	double jj;
+
+	Coordinate(final double ii, final double jj) {
 		this.ii = ii;
 		this.jj = jj;
 	}
-	
-	public Coordinate subtract(Coordinate a){
-		return new Coordinate(this.ii-a.ii,this.jj-a.jj);
-	}
-	
 
-	
-	public double maxVal(){
-		return max(Math.abs(ii),Math.abs(jj));
+	Coordinate subtract(final Coordinate a) {
+		return new Coordinate(ii - a.ii, jj - a.jj);
 	}
-	
-	private double max(double a,double b){
-		return a >= b ? a:b;
+
+	double maxVal() {
+		return Math.max(Math.abs(ii), Math.abs(jj));
 	}
-	
-	
 }

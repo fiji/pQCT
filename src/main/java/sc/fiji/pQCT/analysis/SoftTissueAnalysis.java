@@ -20,141 +20,92 @@
 
 package sc.fiji.pQCT.analysis;
 
+import java.util.DoubleSummaryStatistics;
+import java.util.function.Function;
+import java.util.stream.IntStream;
+
 import sc.fiji.pQCT.selectroi.SelectSoftROI;
 
-import java.util.Arrays;
+public class SoftTissueAnalysis {
 
-public class SoftTissueAnalysis{
-	public double MuA;
-	public double IntraMuFatA;
-	public double TotalMuA;
-	public double FatA;
-	public double SubCutFatA;
-	public double LimbA;
-	public double MuD;
-	public double IntraMuFatD;
-	public double TotalMuD;
-	public double FatD;
-	public double SubCutFatD;
-	public double SubCutFatDMedian;
-	public double LimbD;
-	public double FatPercentage;
-	public double MeA;
-	public double MeD;
-	public double BoneA;
-	public double BoneD;
-	public double PeeledA;
-	public double PeeledD;
-	public SoftTissueAnalysis(SelectSoftROI roi){
-		MuA			=0;
-		FatA		=0;
-		LimbA		=0;
-		IntraMuFatA	=0;
-		TotalMuA	=0;
-		MuD			=0;
-		FatD		=0;
-		LimbD		=0;
-		IntraMuFatD	=0;
-		TotalMuD	=0;
-		SubCutFatA	=0;
-		SubCutFatD	=0;
-		MeA			=0;
-		MeD			=0;
-		BoneA		=0;
-		BoneD		=0;
-		PeeledA		=0;
-		PeeledD		=0;
-		double weightedFatArea = 0;
-		double weightedLimbArea = 0;
-		for (int i =0;i<roi.width*roi.height;i++){
-			if (roi.softSieve[i] >0){ //Bone & Marrow not excluded!!
-				LimbA +=1;
-				LimbD +=roi.softScaledImage[i];
-				weightedLimbArea += roi.softScaledImage[i]+1000.0;
-			}
-			if (roi.softSieve[i] ==2 || roi.softSieve[i] ==4 || roi.softSieve[i] ==5){ //Fat
-				FatA +=1;
-				FatD +=roi.softScaledImage[i];
-				weightedFatArea += roi.softScaledImage[i]+1000.0;
-			}
-			if (roi.softSieve[i] ==3){ //Muscle no IntraFat
-				MuA +=1;
-				MuD +=roi.softScaledImage[i];
-				TotalMuA	+=1;
-				TotalMuD	+=roi.softScaledImage[i];
-			}
-			if (roi.softSieve[i] ==4){ //IntraFat
-				IntraMuFatA	+=1;
-				IntraMuFatD	+=roi.softScaledImage[i];
-				TotalMuA	+=1;
-				TotalMuD	+=roi.softScaledImage[i];
-				//weightedFatArea += roi.softScaledImage[i]+1000.0;
-			}
-			if (roi.softSieve[i] ==5){ //subCutFat
-				SubCutFatA	+=1;
-				SubCutFatD	+=roi.softScaledImage[i];
-				//weightedFatArea += roi.softScaledImage[i]+1000.0;
-			}
-			if (roi.softSieve[i] ==6){ //Bone area
-				BoneA	+=1;
-				BoneD	+=roi.softScaledImage[i];
-			}
-			if (roi.softSieve[i] ==7){ //MedFat
-				MeA	+=1;
-				MeD	+=roi.softScaledImage[i];
-			}
-			if (roi.eroded[i] ==1){ //PeeledA
-				PeeledA	+=1;
-				PeeledD	+=roi.softScaledImage[i];
-			}
-			
-		}
-		LimbD/=LimbA;
-		LimbA*=roi.pixelSpacing*roi.pixelSpacing/100.0;
-		FatD/=FatA;
-		FatA*=roi.pixelSpacing*roi.pixelSpacing/100.0;
-		
-		MeD/=MeA;
-		MeA*=roi.pixelSpacing*roi.pixelSpacing/100.0;
-		BoneD/=BoneA;
-		BoneA*=roi.pixelSpacing*roi.pixelSpacing/100.0;
-		PeeledD/=PeeledA;
-		PeeledA*=roi.pixelSpacing*roi.pixelSpacing/100.0;
-		
-		//Added SubCutFatDMedian 2016/01/08
-		double[] subCFatPixels = new double[(int) SubCutFatA];
-		int cnt =0;
-		for (int i =0;i<roi.width*roi.height;i++){
-			if (roi.softSieve[i] ==5){ //subCutFat
-				subCFatPixels[cnt]+=roi.softScaledImage[i];
-				++cnt;
-			}
-		}
-		SubCutFatDMedian = median(subCFatPixels);		
-		SubCutFatD/=SubCutFatA;
-		SubCutFatA*=roi.pixelSpacing*roi.pixelSpacing/100.0;
-		MuD/=MuA;
-		MuA*=roi.pixelSpacing*roi.pixelSpacing/100.0;
-		TotalMuD/=TotalMuA;
-		TotalMuA*=roi.pixelSpacing*roi.pixelSpacing/100.0;
-		IntraMuFatD/=IntraMuFatA;
-		IntraMuFatA*=roi.pixelSpacing*roi.pixelSpacing/100.0;
-		FatPercentage = (weightedFatArea/weightedLimbArea)*100.0;
+	public double muA;
+	public double intraMuFatA;
+	public double totalMuA;
+	public double fatA;
+	public double subCutFatA;
+	public double limbA;
+	public double muD;
+	public double intraMuFatD;
+	public double totalMuD;
+	public double fatD;
+	public double subCutFatD;
+	public double subCutFatDMedian;
+	public double limbD;
+	public double fatPercentage;
+	public double meA;
+	public double meD;
+	public double boneA;
+	public double boneD;
+	public double peeledA;
+	public double peeledD;
+
+	public SoftTissueAnalysis(final SelectSoftROI roi) {
+		final int roiSize = roi.width * roi.height;
+		final Function<Integer, DoubleSummaryStatistics> typeStatistics =
+			type -> IntStream.range(0, roiSize).filter(i -> roi.softSieve[i] == type)
+				.mapToDouble(i -> roi.softScaledImage[i]).summaryStatistics();
+		final double[][] stats = IntStream.range(1, 8).mapToObj(
+			typeStatistics::apply).map(summary -> new double[] { summary.getCount(),
+				summary.getAverage() }).toArray(double[][]::new);
+		final double areaScale = roi.pixelSpacing * roi.pixelSpacing / 100.0;
+		limbA = stats[0][0] * areaScale;
+		limbD = stats[0][1];
+		final double weightedLimbArea = stats[0][0] + 1000 * limbA;
+		final double totalFatSum = stats[1][0] + stats[3][0] + stats[4][0];
+		final double totalFatCount = stats[1][1] + stats[3][1] + stats[4][1];
+		fatA = totalFatCount * areaScale;
+		fatD = totalFatSum / totalFatCount;
+		final double weightedFatArea = totalFatSum + totalFatCount * 1000;
+		muA = stats[2][0] * areaScale;
+		muD = stats[2][1];
+		intraMuFatA = stats[3][0];
+		intraMuFatD = stats[3][1];
+		final double totalMuscleCount = stats[2][0] + stats[3][0];
+		final double totalMuscleSum = stats[2][1] + stats[3][1];
+		totalMuA = totalMuscleCount * areaScale;
+		totalMuD = totalMuscleSum / totalMuscleCount;
+		subCutFatA = stats[4][0] * areaScale;
+		subCutFatD = stats[4][1];
+		boneA = stats[5][0] * areaScale;
+		boneD = stats[5][1];
+		meA = stats[6][0] * areaScale;
+		meD = stats[6][1];
+		final DoubleSummaryStatistics peeledStats = IntStream.range(0, roiSize)
+			.filter(i -> roi.eroded[i] == 1).mapToDouble(i -> roi.softScaledImage[i])
+			.summaryStatistics();
+		peeledD = peeledStats.getAverage();
+		peeledA = peeledStats.getCount() * areaScale;
+		final double[] subCFatPixels = IntStream.range(0, roiSize).filter(
+			i -> roi.softSieve[i] == 5).mapToDouble(i -> roi.softScaledImage[i])
+			.sorted().toArray();
+		subCutFatDMedian = median(subCFatPixels);
+		fatPercentage = (weightedFatArea / weightedLimbArea) * 100.0;
 	}
-	
-	double median(double[] a) {
-		if (a.length < 1){
-			return 0d;
+
+	// TODO Use a pre-existing method
+	private static double median(final double[] a) {
+		if (a.length < 0) {
+			return 0.0;
 		}
-		if (a.length ==1){
+		if (a.length == 1) {
 			return a[0];
 		}
-		Arrays.sort(a);
-		int middle = a.length / 2;
-		if (a.length % 2 == 0){
-		  return (a[middle - 1] + a[middle]) / 2;
-		}else{
-		  return a[middle];
+		final int middle = a.length / 2;
+		if (a.length % 2 == 0) {
+			return (a[middle - 1] + a[middle]) / 2;
+		}
+		else {
+			return a[middle];
 		}
 	}
 }

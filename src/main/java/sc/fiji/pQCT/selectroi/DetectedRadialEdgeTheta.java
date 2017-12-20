@@ -19,27 +19,27 @@
 */
 
 package sc.fiji.pQCT.selectroi;
-import java.util.*;	//Vector, Collections
 
-public class DetectedRadialEdgeTheta implements Comparable<DetectedRadialEdgeTheta>{
-	public int ii;		//indexes for x-coordinates
-	public int jj;	//indexes for y-coordinates
-	public double theta;
-	public double radius;
-	public int index;
+public class DetectedRadialEdgeTheta implements
+	Comparable<DetectedRadialEdgeTheta>
+{
 
-	public DetectedRadialEdgeTheta(int ii,int jj, double theta, double radius, int index){
-		this.ii = ii;
-		this.jj = jj;
-		this.theta = theta;
+	private final double radius;
+	int index;
+
+	DetectedRadialEdgeTheta(final double radius, final int index) {
 		this.radius = radius;
 		this.index = index;
 	}
-	
-	public int compareTo(DetectedRadialEdgeTheta o){
-		int returnValue = 0;
-		if (o == null || this == null) {throw new NullPointerException();}
-		if (this.radius == o.radius) {return 0;}
-		return this.radius < o.radius ? -1 : 1;		
-	}	
+
+	@Override
+	public int compareTo(final DetectedRadialEdgeTheta o) {
+		return Double.compare(radius, o.radius);
+	}
+
+	@Override
+	public boolean equals(final Object o) {
+		return o instanceof DetectedRadialEdgeTheta && compareTo(
+			(DetectedRadialEdgeTheta) o) == 0;
+	}
 }

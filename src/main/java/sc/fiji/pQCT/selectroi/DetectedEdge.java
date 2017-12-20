@@ -21,27 +21,28 @@
 package sc.fiji.pQCT.selectroi;
 
 import java.util.Vector;
-@SuppressWarnings(value ={"serial","unchecked"}) //Unchecked for obtaining Vector<Object> as a returnvalue
 
-public class DetectedEdge implements Comparable<DetectedEdge>{
-	public Vector<Integer> iit;		//indexes for x-coordinates
-	public Vector<Integer> jiit;	//indexes for y-coordinates
-	public int area;
-	public int length;
-	
-	public DetectedEdge(Vector<Integer> iit,Vector<Integer> jiit,int area){
+public class DetectedEdge implements Comparable<DetectedEdge> {
+
+	public final Vector<Integer> iit; // indexes for x-coordinates
+	public final Vector<Integer> jiit; // indexes for y-coordinates
+	public final int area;
+	public final int length;
+
+	DetectedEdge(final Vector<Integer> iit, final Vector<Integer> jiit, final int area) {
 		this.iit = iit;
 		this.jiit = jiit;
-		this.length = iit.size();
+		length = iit.size();
 		this.area = area;
 	}
-	
-	public int compareTo(DetectedEdge o){
-		int returnValue = 0;
-		if (o == null || this == null) {throw new NullPointerException();}
-		if (this.area == o.area) {return 0;}
-		return this.area < o.area ? -1 : 1;		
+
+	@Override
+	public boolean equals(final Object o) {
+		return o instanceof DetectedEdge && compareTo((DetectedEdge) o) == 0;
 	}
 
-	
+	@Override
+	public int compareTo(final DetectedEdge o) {
+	    return Double.compare(area, o.area);
+	}
 }

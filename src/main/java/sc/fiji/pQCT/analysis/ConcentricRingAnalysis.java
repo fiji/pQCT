@@ -18,149 +18,142 @@
     Copyright (C) 2011 Timo Rantalainen
 */
 
-
 package sc.fiji.pQCT.analysis;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Vector;
 
 import sc.fiji.pQCT.io.ImageAndAnalysisDetails;
 import sc.fiji.pQCT.selectroi.SelectROI;
 
-import java.util.Vector;
-//import ij.text.*;		//Debugging text window
-public class ConcentricRingAnalysis{
-	
-	//constants
-	public double sectorWidth;
-	public double divisions;
-	public double minimum;
-	public double maximum;
-	public double pixelSpacing;
-	public int height;
-	public int width;
-	public double threshold;	
-	
-	public double[] boneCenter;
-	
-	//Variables for radii calculations
-	public double[]	Theta;
-	public double[]  Ru;
-	Vector<double[]> BMDj;
+public class ConcentricRingAnalysis {
 
-	//Variables for moment calculations
-	public Vector<Integer> pind;	
-	public Vector<Integer> pindColor;
-	
-	//Density distribution variables
-	public double[] pRad;
-	public double[] pericorticalRadii;
-	public Vector<double[]> BMDs;
-	SelectROI roi;
-	
-	public ConcentricRingAnalysis(SelectROI roi,ImageAndAnalysisDetails details,DetermineAlfa determineAlfa){
-		this.pind = determineAlfa.pind;
-		this.pindColor = determineAlfa.pindColor;
+	private final double pixelSpacing;
+	public final int height;
+	public final int width;
+	public final double[] boneCenter;
+	// Variables for radii calculations
+	public final double[] theta = new double[360];
+	public final double[] rU = new double[360];
+	public final double[] pericorticalRadii;
+	public final Vector<double[]> BMDs = new Vector<>();
+	private final double sectorWidth;
+	private final double divisions;
+	// Variables for moment calculations
+	private final Vector<Integer> pind;
+	private final SelectROI roi;
+	private final List<double[]> bMDJ = new Vector<>();
+
+	public ConcentricRingAnalysis(final SelectROI roi,
+		final ImageAndAnalysisDetails details, final DetermineAlpha determineAlpha)
+	{
+		pind = determineAlpha.pind;
 		this.roi = roi;
 		sectorWidth = details.concentricSector;
 		divisions = details.concentricDivisions;
-		minimum = roi.minimum;
-		maximum = roi.maximum;
 		height = roi.height;
 		width = roi.width;
 		pixelSpacing = roi.pixelSpacing;
 		boneCenter = new double[2];
-		int points =0;
-		for (int j = 0; j< height;j++){
-			for (int i = 0; i<width;i++){
-				if (roi.sieve[i+j*width] > 0){
-					boneCenter[0]+=(double)i;
-					boneCenter[1]+=(double)j;
+		int points = 0;
+		for (int j = 0; j < height; j++) {
+			final int offset = j * width;
+			for (int i = 0; i < width; i++) {
+				if (roi.sieve[offset + i] > 0) {
+					boneCenter[0] += i;
+					boneCenter[1] += j;
 					++points;
 				}
 			}
 		}
-		boneCenter[0] /=(double)points;
-		boneCenter[1] /=(double)points;
+		boneCenter[0] = boneCenter[0] / points;
+		boneCenter[1] = boneCenter[1] / points;
 		calculateRadii();
-		rotateResults(details,roi);
+		rotateResults();
+		final int size = (int) (360.0 / sectorWidth);
+		pericorticalRadii = new double[size];
 	}
-	
-	void rotateResults(ImageAndAnalysisDetails details, SelectROI roi){
-		//Bone marrow cortexCenter[0] and cortexCenter[1]
 
-		pRad = new double[360];
-
-		
-		//Calculate the endocortical and pericortical radii along with the corresponding radii after peeling one layer of pixels
-		for (int inde=0;inde<360;inde++){
-			pRad[inde] = Ru[inde]*pixelSpacing;
+	private void calculateRadii() {
+		// Calculate radii in polar coordinate system originating from bone marrow
+		// center of mass
+		for (int i = 0; i < divisions; ++i) {
+			bMDJ.add(new double[360]);
 		}
-
-
-		pericorticalRadii = new double[(int) (360/sectorWidth)];
-		BMDs = new Vector<double[]>();
-		for (int div = 0;div<divisions;++div){
-			BMDs.add(new double[(int) (360/sectorWidth)]);
+		final double rIncrement = 0.1;
+		// Finding endocortical and pericortical
+		// borders uMath.sing polar coordinates
+		for (int et = 0; et < 360; ++et) {
+			final Vector<Double> BMD_temp = new Vector<>();
+			theta[et] = Math.PI / 180.0 * et;
+			final double cosTheta = Math.cos(theta[et]);
+			final double sinTheta = Math.sin(theta[et]);
+			final double cX = boneCenter[0];
+			final double cY = boneCenter[1];
+			double r = 0;
+			while (roi.sieve[(int) (cX + r * cosTheta) + ((int) ((cY + r *
+				sinTheta)) * width)] > 0 || roi.sieve[(int) (cX + (r + 0.5) *
+					cosTheta) + ((int) ((cY + (r + 0.5) * sinTheta)) * width)] > 0 ||
+				roi.sieve[(int) (cX + (r + 1) * cosTheta) + ((int) ((cY + (r + 1) *
+					sinTheta)) * width)] > 0 || roi.sieve[(int) (cX + (r + 2) *
+						cosTheta) + ((int) ((cY + (r + 2) * sinTheta)) * width)] > 0 ||
+				roi.sieve[(int) (cX + (r + 3) * cosTheta) + ((int) ((cY + (r + 3) *
+					sinTheta)) * width)] > 0 || roi.sieve[(int) (cX + (r + 4) *
+						cosTheta) + ((int) ((cY + (r + 4) * sinTheta)) * width)] > 0 ||
+				roi.sieve[(int) (cX + (r + 6) * cosTheta) + ((int) ((cY + (r + 6) *
+					sinTheta)) * width)] > 0)
+			{
+				// Calculate BMC rho*dV, dV=dA*slice_thickness
+				// dA=pi*((r(et)*resolution)^2-((r(et)-0.1)*resolution)^2),
+				// slice_thickness = 1 mm
+				// (could be set to actual slice thickness, but makes no
+				// difference for comparisons -> 1 mm is used bMD divided by
+				// 1000, because unit is mg/cm3 and area is mm2
+				BMD_temp.add(roi.scaledImage[(int) (cX + r * cosTheta) + ((int) ((cY +
+					r * sinTheta)) * width)]);
+				r += rIncrement;
+			}
+			rU[et] = r;
+			final int analysisThickness = BMD_temp.size();
+			// Dividing the cortex to three divisions -> save the mean vBMD for each
+			// division
+			if (analysisThickness < divisions) {
+				return;
+			}
+			// cortex
+			for (int div = 0; div < divisions; ++div) {
+				double mo = 0;
+				for (int ka = (int) (analysisThickness * div /
+					divisions); ka < (int) (analysisThickness * (div + 1.0) /
+						divisions); ka++)
+				{
+					bMDJ.get(div)[et] += BMD_temp.get(ka);
+					mo++;
+				}
+				bMDJ.get(div)[et] /= mo;
+			}
 		}
-		int pp;
-		int dd;
-		//Calculate the division and sector values of vBMD
-		for (pp = 0;pp < (int) (360/sectorWidth); pp++){
-			for (dd = 0;dd<(int) sectorWidth;dd++){
-				pericorticalRadii[pp] += pRad[pind.get((int) (pp*sectorWidth+dd))]/(double) sectorWidth;
-				for (int div = 0;div<divisions;++div){
-					BMDs.get(div)[pp] += BMDj.get(div)[pind.get((int) (pp*sectorWidth+dd))]/(double) sectorWidth;
+	}
+
+	private void rotateResults() {
+		final double[] pRad = Arrays.stream(rU).map(r -> r * pixelSpacing)
+			.toArray();
+		final int size = (int) (360.0 / sectorWidth);
+		for (int div = 0; div < divisions; ++div) {
+			BMDs.add(new double[size]);
+		}
+		// Calculate the endocortical and pericortical radii along with the
+		// corresponding radii after peeling one layer of pixels.
+		// Calculate the division and sector values of vBMD
+		for (int pp = 0; pp < size; pp++) {
+			for (int dd = 0; dd < (int) sectorWidth; dd++) {
+				final int index = (int) (pp * sectorWidth + dd);
+				pericorticalRadii[pp] += pRad[pind.get(index)] / sectorWidth;
+				for (int div = 0; div < divisions; ++div) {
+					BMDs.get(div)[pp] += bMDJ.get(div)[pind.get(index)] / sectorWidth;
 				}
 			}
 		}
-		
 	}
-	
-	void calculateRadii(){
-			//Calculate radii in polar coordinate system originating from bone marrow center of mass
-		Theta= new double[360];
-		Ru= new double[360];
-		BMDj = new Vector<double[]>();
-		for (int i = 0;i<divisions;++i){
-			BMDj.add(new double[360]);
-		}
-		Vector<Double> BMD_temp = new Vector<Double>();
-		double rIncrement = 0.1;
-		for (int et = 0;et < 360;++et){ //Finding endocortical and pericortical borders uMath.sing polar coordinates
-			Theta[et]=Math.PI/180.0*et;
-			BMD_temp.clear();
-			double R = 0;
-						while (roi.sieve[(int) (boneCenter[0]+R*Math.cos(Theta[et]))+ ((int) ((boneCenter[1]+R*Math.sin(Theta[et])))*width)] > 0
-					|| roi.sieve[(int) (boneCenter[0]+(R+0.5)*Math.cos(Theta[et]))+ ((int) ((boneCenter[1]+(R+0.5)*Math.sin(Theta[et])))*width)] > 0
-					|| roi.sieve[(int) (boneCenter[0]+(R+1)*Math.cos(Theta[et]))+ ((int) ((boneCenter[1]+(R+1)*Math.sin(Theta[et])))*width)] > 0
-					|| roi.sieve[(int) (boneCenter[0]+(R+2)*Math.cos(Theta[et]))+ ((int) ((boneCenter[1]+(R+2)*Math.sin(Theta[et])))*width)] > 0
-					|| roi.sieve[(int) (boneCenter[0]+(R+3)*Math.cos(Theta[et]))+ ((int) ((boneCenter[1]+(R+3)*Math.sin(Theta[et])))*width)] > 0
-					|| roi.sieve[(int) (boneCenter[0]+(R+4)*Math.cos(Theta[et]))+ ((int) ((boneCenter[1]+(R+4)*Math.sin(Theta[et])))*width)] > 0
-					|| roi.sieve[(int) (boneCenter[0]+(R+6)*Math.cos(Theta[et]))+ ((int) ((boneCenter[1]+(R+6)*Math.sin(Theta[et])))*width)] > 0){
-						//Calculate BMC rho*dV, dV=dA*slice_thickness
-						//dA=pi*((R(et)*resolution)^2-((R(et)-0.1)*resolution)^2), slice_thickness = 1 mm
-						//(could be set to actual slice thickness, but makes no
-						//difference for comparisons -> 1 mm is used BMD divided by
-						//1000, because unit is mg/cm3 and area is mm2
-						BMD_temp.add(roi.scaledImage[(int) (boneCenter[0]+R*Math.cos(Theta[et]))+ ((int) ((boneCenter[1]+R*Math.sin(Theta[et])))*width)]);
-						R += rIncrement;
-			}
-			Ru[et] = R;
-			int analysisThickness = BMD_temp.size();
-			//Dividing the cortex to three divisions -> save the mean vBMD for each division
-			if (analysisThickness < divisions){
-				break;
-			} else {
-				//cortex 
-				for (int div = 0; div<divisions;++div){
-					int mo = 0;
-					for (int ka = (int) ((double)analysisThickness*(double)div/(double)divisions);ka <(int) ((double)analysisThickness*((double)div+1.0)/(double)divisions);ka++){
-						BMDj.get(div)[et] += BMD_temp.get(ka);
-						mo++;
-					}
-					BMDj.get(div)[et] /= (double) mo;
-				}
-			}
-
-		}
-	}
-
 }

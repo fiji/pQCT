@@ -18,364 +18,331 @@
     Copyright (C) 2011 Timo Rantalainen
 */
 
-
 package sc.fiji.pQCT.analysis;
+
+import static java.util.Arrays.stream;
+import static java.util.stream.IntStream.range;
+
+import java.util.List;
+import java.util.Vector;
 
 import sc.fiji.pQCT.io.ImageAndAnalysisDetails;
 import sc.fiji.pQCT.selectroi.SelectROI;
 
-import java.util.Vector;
+public class DistributionAnalysis {
 
-//import ij.text.*;		//Debugging text window
+	public final int height;
+	public final int width;
+	public final double[] marrowCenter = new double[2];
+	public final double[] theta = new double[360];
+	public final double[] r = new double[360];
+	public final double[] r2 = new double[360];
+	public final double[] endocorticalRadii;
+	public final double[] pericorticalRadii;
+	public final double[] endoCorticalBMDs;
+	public final double[] midCorticalBMDs;
+	public final double[] periCorticalBMDs;
+	public final double[] radialDistribution;
+	public final double[] polarDistribution;
+	public final double peeledBMD;
+	private final double pixelSpacing;
+	private final double[] originalROI;
+	private final double[] peeledROI;
+	private final double sectorWidth;
+	private final double divisions;
+	private final double minimum;
+	private final double threshold;
+	private final double[] rS = new double[360];
+	private final double[] rU = new double[360];
+	private final List<double[]> bMDJ = new Vector<>();
+	private final Vector<Integer> pInd;
+	private final double maxRadius;
 
-public class DistributionAnalysis{
-	
-	//image array pointers
-	public double[] originalROI;
-	public double[] peeledROI;
-	
-	//constants
-	public double sectorWidth;
-	public double divisions;
-	public double minimum;
-	public double maximum;
-	public double pixelSpacing;
-	public int height;
-	public int width;
-	public double threshold;	
-	
-	//Vectors for bone and marrow bone pixel coordinates
-	Vector<Integer> marrowI;
-	Vector<Integer>  marrowJ;
-	Vector<Integer> cortexI;
-	Vector<Integer> cortexJ;
-	double maxRadius;
-	double maxRadiusY;
-	public double[] marrowCenter;
-	double[] cortexCenter;
-	
-	//Variables for radii calculations
-	public double[]	Theta;
-	public double[]	R;
-	public double[]  R2;
-	double[]	Rs;
-	double[]  Ru;
-	Vector<double[]> BMDj;
-
-	//Variables for moment calculations
-	public Vector<Integer> pind;	
-	public Vector<Integer> pindColor;
-	
-	//Density distribution variables
-	public double[] pRad;
-	public double[] eRad;
-	public double[] pPRad;
-	public double[] pERad;
-	public double[] endocorticalRadii;
-	public double[] pericorticalRadii;
-	public double[] peeledEndocorticalRadii;
-	public double[] peeledPericorticalRadii;
-	public double[] endoCorticalBMDs;
-	public double[] midCorticalBMDs;
-	public double[] periCorticalBMDs;
-	public double[] radialDistribution;
-	public double[] polarDistribution;
-	public boolean preventPeeling;
-	
-	public double peeledBMD;
-	
-	public DistributionAnalysis(SelectROI roi,ImageAndAnalysisDetails details,DetermineAlfa determineAlfa){
-		this.pind = determineAlfa.pind;
-		this.pindColor = determineAlfa.pindColor;
+	public DistributionAnalysis(final SelectROI roi,
+		final ImageAndAnalysisDetails details, final DetermineAlpha determineAlpha)
+	{
+		pInd = determineAlpha.pind;
 		sectorWidth = details.sectorWidth;
+		final int size = (int) (360 / sectorWidth);
+		endocorticalRadii = new double[size];
+		pericorticalRadii = new double[size];
+		endoCorticalBMDs = new double[size];
+		midCorticalBMDs = new double[size];
+		periCorticalBMDs = new double[size];
+		polarDistribution = new double[size];
 		divisions = details.divisions;
-		preventPeeling = details.preventPeeling;
-		threshold = details.BMDthreshold;
+		radialDistribution = new double[(int) divisions];
+		final boolean preventPeeling = details.preventPeeling;
+		threshold = details.bMDThreshold;
 		minimum = roi.minimum;
-		maximum = roi.maximum;
-		marrowI = roi.boneMarrowRoiI;
-		marrowJ = roi.boneMarrowRoiJ;
+		final Vector<Integer> marrowI = roi.boneMarrowRoiI;
+		final Vector<Integer> marrowJ = roi.boneMarrowRoiJ;
 		height = roi.height;
 		width = roi.width;
 		pixelSpacing = roi.pixelSpacing;
-		originalROI = new double[width*height];
-		peeledROI = new double[width*height];
-		originalROI = (double[]) roi.cortexROI.clone();
-		peeledROI = (double[]) roi.cortexROI.clone();
+		originalROI = roi.cortexROI.clone();
+		peeledROI = roi.cortexROI.clone();
 		erode(peeledROI);
-		marrowCenter = new double[2];
-		for (int i = 0; i< marrowI.size();i++){
-			marrowCenter[0]+=(double)marrowI.get(i);
-			marrowCenter[1]+=(double)marrowJ.get(i);
+		for (int i = 0; i < marrowI.size(); i++) {
+			marrowCenter[0] += marrowI.get(i);
+			marrowCenter[1] += marrowJ.get(i);
 		}
-		marrowCenter[0] /=(double)marrowI.size();
-		marrowCenter[1] /=(double)marrowJ.size();
-		//IJ.log("C0 "+marrowCenter[0]+" C1 "+marrowCenter[1]);
-		maxRadius = 0;
-		cortexI = new Vector<Integer>();
-		cortexJ = new Vector<Integer>();
-		peeledBMD = 0;
-		int tempCounter = 0;
-		for (int j = 0; j< height;j++){
-			for (int i = 0; i<width;i++){
-				if (peeledROI[i+j*width] >= threshold){
-					if (Math.sqrt((i-marrowCenter[0])*(i-marrowCenter[0])+(j-marrowCenter[1])*(j-marrowCenter[1])) > maxRadius){
-						maxRadius = Math.sqrt((i-marrowCenter[0])*(i-marrowCenter[0])+(j-marrowCenter[1])*(j-marrowCenter[1]));
-					}
-					++tempCounter;
-					peeledBMD+=peeledROI[i+j*width];
-				}
-				if (originalROI[i+j*width] >= threshold){
-					cortexI.add(i);
-					cortexJ.add(j);
-				}
-			}
-		}
-		peeledBMD/=((double) tempCounter);	
-		
-		cortexCenter = new double[2];
-		for (int i = 0; i< cortexI.size();i++){
-			cortexCenter[0]+=(double)cortexI.get(i);
-			cortexCenter[1]+=(double)cortexJ.get(i);
-
-		}
-		cortexCenter[0] /=(double)cortexI.size();
-		cortexCenter[1] /=(double)cortexJ.size();
-		maxRadiusY = 0; //y for cortical pixels. used for BSI calculations, i.e. density weighted section modulus
-		for (int i = 0; i< cortexI.size();i++){
-			if (Math.sqrt(((double)cortexI.get(i)-cortexCenter[0])*((double)cortexI.get(i)-cortexCenter[0])
-				+((double)cortexJ.get(i)-cortexCenter[1])*((double)cortexJ.get(i)-cortexCenter[1])) > maxRadiusY){
-				maxRadiusY = Math.sqrt(((double)cortexI.get(i)-cortexCenter[0])*((double)cortexI.get(i)-cortexCenter[0])
-				+((double)cortexJ.get(i)-cortexCenter[1])*((double)cortexJ.get(i)-cortexCenter[1]));
-			}
-		}
-		if (preventPeeling){
+		marrowCenter[0] /= marrowI.size();
+		marrowCenter[1] /= marrowJ.size();
+		final int peeledSize = width * height;
+		peeledBMD = range(0, peeledSize).filter(i -> peeledROI[i] >= threshold)
+			.average().orElse(0.0);
+		maxRadius = range(0, peeledSize).filter(i -> peeledROI[i] >= threshold)
+			.mapToDouble(index -> {
+				final int j = index / width;
+				final int i = index - width * j;
+				final double x = i - marrowCenter[0];
+				final double y = j - marrowCenter[1];
+				return Math.sqrt(x * x + y * y);
+			}).max().orElse(0.0);
+		if (preventPeeling) {
 			calculateRadiiNoPeeling();
-		}else{
+		}
+		else {
 			calculateRadii();
 		}
-		rotateResults(details,roi);
+		rotateResults();
 	}
-	
-	void rotateResults(ImageAndAnalysisDetails details, SelectROI roi){
-		//Bone marrow cortexCenter[0] and cortexCenter[1]
 
-		pRad = new double[360];
-		eRad= new double[360];
-		pPRad= new double[360];
-		pERad= new double[360];
-		
-		//Calculate the endocortical and pericortical radii along with the corresponding radii after peeling one layer of pixels
-		for (int inde=0;inde<360;inde++){
-			pRad[inde] = Ru[inde]*pixelSpacing;
-			eRad[inde] = Rs[inde]*pixelSpacing;
-			pPRad[inde] = R[inde]*pixelSpacing;
-			pERad[inde] = R2[inde]*pixelSpacing;
-			
+	// TODO Add a boolean parameter preventPeeling, and combine method with
+	// calculateRadiiNoPeeling
+	private void calculateRadii() {
+		// Calculate radii in polar coordinate system originating from bone marrow
+		// center of mass
+		for (int i = 0; i < divisions; ++i) {
+			bMDJ.add(new double[360]);
 		}
+		// Finding endocortical and pericortical borders uMath.sing polar
+		// coordinates
+		for (int et = 0; et < 360; ++et) {
+			final Vector<Double> BMD_temp = new Vector<>();
+			theta[et] = Math.PI / 180.0 * et;
+			if (et > 0) {
+				r[et] = r[et - 1] / 2.0;
+			}
 
-		endocorticalRadii = new double[(int) (360/sectorWidth)];
-		pericorticalRadii = new double[(int) (360/sectorWidth)];
-		peeledEndocorticalRadii = new double[(int) (360/sectorWidth)];
-		peeledPericorticalRadii = new double[(int) (360/sectorWidth)];
-		endoCorticalBMDs = new double[(int) (360/sectorWidth)];
-		midCorticalBMDs = new double[(int) (360/sectorWidth)];
-		periCorticalBMDs = new double[(int) (360/sectorWidth)];
-		int pp;
-		int dd;
-		
-		double[][] corticalDensity = new double[(int) divisions][(int) (360/sectorWidth)];
-		//Calculate the division and sector values of vBMD
-		for (pp = 0;pp < (int) (360/sectorWidth); ++pp){
-			for (dd = 0;dd<(int) sectorWidth;++dd){
-				endocorticalRadii[pp] += eRad[pind.get((int) (pp*sectorWidth+dd))]/(double) sectorWidth;
-				pericorticalRadii[pp] += pRad[pind.get((int) (pp*sectorWidth+dd))]/(double) sectorWidth;
-				peeledEndocorticalRadii[pp] += pERad[pind.get((int) (pp*sectorWidth+dd))]/(double) sectorWidth;
-				peeledPericorticalRadii[pp] += pPRad[pind.get((int) (pp*sectorWidth+dd))]/(double) sectorWidth;
-				//Cortex
-				endoCorticalBMDs[pp] += BMDj.get(0)[pind.get((int) (pp*sectorWidth+dd))]/(double) sectorWidth;
-				midCorticalBMDs[pp] += BMDj.get(1)[pind.get((int) (pp*sectorWidth+dd))]/(double) sectorWidth;
-				periCorticalBMDs[pp] += BMDj.get(2)[pind.get((int) (pp*sectorWidth+dd))]/(double) sectorWidth;
+			// Anatomical endosteal border
+			final double sinTheta = Math.sin(theta[et]);
+			final double cosTheta = Math.cos(theta[et]);
+			final double x = marrowCenter[0];
+			final double y = marrowCenter[1];
+			r[et] = expandRadius(originalROI, threshold, r[et], x, y, cosTheta,
+				sinTheta);
+			rS[et] = r[et];
+			r[et] = expandRadius(peeledROI, 1.0, r[et], x, y, cosTheta, sinTheta);
+			r2[et] = r[et];
+			r[et] = r[et] + 0.1;
+
+			// Peeled periosteal border
+			r[et] = expandRadiusMulti(peeledROI, 0.0, r[et], x, y, cosTheta,
+				sinTheta);
+			final long bMDIterations = (long) ((r[et] - r2[et]) / 1.0);
+			for (int i = 1; i < bMDIterations; i++) {
+				final double radius = r2[et] + i * 0.1;
+				final int index = (int) ((x + radius * cosTheta) + (y + radius *
+					sinTheta) * width);
+				if (peeledROI[index] > 0) {
+					BMD_temp.add(originalROI[index]);
+				}
+			}
+
+			// Anatomical periosteal border
+			rU[et] = r[et];
+			rU[et] = expandRadiusMulti(originalROI, threshold, rU[et], x, y, cosTheta,
+				sinTheta);
+
+			// Dividing the cortex to three divisions -> save the mean vBMD for each
+			// division
+			final double analysisThickness = BMD_temp.size();
+			if (analysisThickness < divisions) {
+				break;
+			}
+			for (int div = 0; div < divisions; ++div) {
+				int mo = 0;
+				for (int ka = (int) (analysisThickness * div /
+					divisions); ka < (int) (analysisThickness * (div + 1.0) /
+						divisions); ka++)
+				{
+					bMDJ.get(div)[et] += BMD_temp.get(ka);
+					mo++;
+				}
+				bMDJ.get(div)[et] /= mo;
+			}
+		}
+	}
+
+	private void calculateRadiiNoPeeling() {
+		// Calculate radii in polar coordinate system originating from bone marrow
+		// center of mass
+		for (int i = 0; i < divisions; ++i) {
+			bMDJ.add(new double[360]);
+		}
+		// Finding endocortical and pericortical
+		// borders uMath.sing polar coordinates
+		for (int et = 0; et < 360; ++et) {
+			theta[et] = Math.PI / 180.0 * et;
+			final Vector<Double> BMD_temp = new Vector<>();
+			if (et > 0) {
+				r[et] = r[et - 1] / 2.0;
+			}
+			final double x = marrowCenter[0];
+			final double y = marrowCenter[1];
+			final double cos = Math.cos(theta[et]);
+			final double sin = Math.sin(theta[et]);
+			// Anatomical endosteal border
+			r[et] = expandRadius(originalROI, threshold, r[et], x, y, cos, sin);
+			r2[et] = r[et];
+			rS[et] = r[et];
+			// Anatomical periosteal border
+			r[et] = expandRadiusMulti(originalROI, 0.0, r[et], x, y, cos, sin);
+			final long bMDIterations = (long) ((r[et] - r2[et]) / 1.0);
+			for (int i = 1; i < bMDIterations; i++) {
+				final double radius = r2[et] + i * 0.1;
+				final int index = (int) ((x + radius * cos) + (y + radius * sin) *
+					width);
+				if (originalROI[index] > 0) {
+					BMD_temp.add(originalROI[index]);
+				}
+			}
+			rU[et] = r[et];
+			final double analysisThickness = BMD_temp.size();
+			// Dividing the cortex to three divisions -> save the mean vBMD for each
+			// division
+			if (analysisThickness < divisions) {
+				break;
+			}
+			for (int div = 0; div < divisions; ++div) {
+				int mo = 0;
+				for (int ka = (int) (analysisThickness * div /
+					divisions); ka < (int) (analysisThickness * (div + 1.0) /
+						divisions); ka++)
+				{
+					bMDJ.get(div)[et] += BMD_temp.get(ka);
+					mo++;
+				}
+				bMDJ.get(div)[et] /= mo;
+			}
+		}
+	}
+
+	// TODO Refactor into a static utility method for all classes instead of
+	// repeating code
+	private void erode(final double[] data) {
+		// Erode algorithm
+		// Modified from the best dilate by one solution taken from
+		// http://ostermiller.org/dilate_and_erode.html
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				final int index = i * width + j;
+				if (data[index] > minimum) {
+					if (i > 0 && data[(i - 1) * width + j] == minimum || j > 0 &&
+						data[(i) * width + j - 1] == minimum || i + 1 < height && data[(i +
+							1) * width + j] == minimum || j + 1 < width && data[(i) * width +
+								j + 1] == minimum)
+					{
+						data[index] = minimum - 1;
+					} // Erode the pixel if any of the neighborhood pixels is background
+				}
+			}
+		}
+		for (int i = 0; i < width * height; i++) {
+			if (data[i] < minimum) {
+				data[i] = minimum;
+			}
+		}
+	}
+
+	// TODO Replace while(roi[x + r * cos(theta) ...]) loops with similar methods
+	private double expandRadius(final double[] roi, final double threshold,
+		final double radius, final double x, final double y, final double cos,
+		final double sin)
+	{
+		double expandedR = radius;
+		final double maxR = maxRadius / pixelSpacing;
+		while (true) {
+			final int index = (int) (x + expandedR * cos + (y + expandedR * sin) *
+				width);
+			if (roi[index] >= threshold || expandedR >= maxR) {
+				break;
+			}
+			expandedR += 0.1;
+		}
+		return expandedR;
+	}
+
+	// TODO Replace while(roi[x + r * cos(theta) ...] || roi[x + r + 2 *
+	// cos(theta) ...]) loops with similar methods
+	private double expandRadiusMulti(final double[] roi, final double threshold,
+		final double radius, final double x, final double y, final double cos,
+		final double sin)
+	{
+		double expandedR = radius;
+		final double maxR = maxRadius / pixelSpacing;
+		while (true) {
+			final double radii[] = { expandedR, expandedR + 0.5, expandedR + 1.0,
+				expandedR + 2.0, expandedR + 3.0, expandedR + 4.0, expandedR + 6.0 };
+			final int[] indices = stream(radii).mapToInt(r -> (int) ((x + r * cos) +
+				(y + r * sin) * width)).toArray();
+			if (stream(indices).noneMatch(i -> roi[i] > threshold) ||
+				expandedR >= maxR)
+			{
+				break;
+			}
+			expandedR += 0.1;
+		}
+		return expandedR;
+	}
+
+	// TODO Refactor into a static utility method for all classes instead of
+	// repeating code
+	private void rotateResults() {
+		// Calculate the endocortical and pericortical radii along with the
+		// corresponding radii after peeling one layer of pixels
+		final double[] pRad = rU.clone();
+		stream(pRad).forEach(r -> r *= pixelSpacing);
+		final double[] eRad = rS.clone();
+		stream(eRad).forEach(r -> r *= pixelSpacing);
+		final double[] pPRad = r.clone();
+		stream(pPRad).forEach(r -> r *= pixelSpacing);
+		final double[] pERad = r2.clone();
+		stream(pERad).forEach(r -> r *= pixelSpacing);
+		final int size = (int) (360 / sectorWidth);
+		final double[][] corticalDensity = new double[(int) divisions][size];
+		// Calculate the division and sector values of vBMD
+		for (int pp = 0; pp < size; ++pp) {
+			for (int dd = 0; dd < (int) sectorWidth; ++dd) {
+				final int index = pInd.get((int) (pp * sectorWidth + dd));
+				endocorticalRadii[pp] += eRad[index] / sectorWidth;
+				pericorticalRadii[pp] += pRad[index] / sectorWidth;
+				// Cortex
+				endoCorticalBMDs[pp] += bMDJ.get(0)[index] / sectorWidth;
+				midCorticalBMDs[pp] += bMDJ.get(1)[index] / sectorWidth;
+				periCorticalBMDs[pp] += bMDJ.get(2)[index] / sectorWidth;
 			}
 			corticalDensity[0][pp] = endoCorticalBMDs[pp];
 			corticalDensity[1][pp] = midCorticalBMDs[pp];
 			corticalDensity[2][pp] = periCorticalBMDs[pp];
 		}
-				
-		//Radial distribution
-		radialDistribution	= new double[(int) divisions];
-		for (int i =0; i<divisions; ++i){
-			radialDistribution[i] = 0;
-			for (int j = 0;j < (int) (360/sectorWidth); ++j){
+
+		// Radial distribution
+		for (int i = 0; i < divisions; ++i) {
+			for (int j = 0; j < size; ++j) {
 				radialDistribution[i] += corticalDensity[i][j];
 			}
-			radialDistribution[i]/= (double) ((int) (360/sectorWidth));
+			radialDistribution[i] /= size;
 		}
-		
-		//Polar distribution
-		polarDistribution	= new double[(int) (360/sectorWidth)];
-		for (int j = 0;j < (int) (360/sectorWidth); ++j){
-			polarDistribution[j] = 0;
-			for (int i =0; i<divisions; ++i){		
+
+		// Polar distribution
+		for (int j = 0; j < size; ++j) {
+			for (int i = 0; i < divisions; ++i) {
 				polarDistribution[j] += corticalDensity[i][j];
 			}
-			polarDistribution[j]/= (double) divisions;
-		}
-		
-	}
-	void calculateRadiiNoPeeling(){
-				//Calculate radii in polar coordinate system originating from bone marrow center of mass
-		Theta= new double[360];
-		R= new double[360];
-		R2= new double[360];
-		Rs= new double[360];
-		Ru= new double[360];
-		BMDj = new Vector<double[]>();
-		for (int i = 0;i<divisions;++i){
-			BMDj.add(new double[360]);
-		}
-		Vector<Double> BMD_temp = new Vector<Double>();
-		int et;
-		for (et = 0;et < 360;++et){ //Finding endocortical and pericortical borders uMath.sing polar coordinates
-			Theta[et]=Math.PI/180.0*et;
-			BMD_temp.clear();
-			if (et > 0){
-				R[et] = R[et-1]/2d;
-			}
-			//Anatomical endosteal border
-			while (originalROI[(int) (marrowCenter[0]+R[et]*Math.cos(Theta[et]))+ ((int) ((marrowCenter[1]+R[et]*Math.sin(Theta[et])))*width)] < threshold 
-					&& R[et] < maxRadius/pixelSpacing){
-				R[et] = R[et] + 0.1;
-			}
-			R2[et] = R[et];
-			Rs[et] = R[et];
-			//Anatomical periosteal border
-			while (originalROI[(int) (marrowCenter[0]+R[et]*Math.cos(Theta[et]))+ ((int) ((marrowCenter[1]+R[et]*Math.sin(Theta[et])))*width)] > 0
-					|| originalROI[(int) (marrowCenter[0]+(R[et]+0.5)*Math.cos(Theta[et]))+ ((int) ((marrowCenter[1]+(R[et]+0.5)*Math.sin(Theta[et])))*width)] > 0
-					|| originalROI[(int) (marrowCenter[0]+(R[et]+1)*Math.cos(Theta[et]))+ ((int) ((marrowCenter[1]+(R[et]+1)*Math.sin(Theta[et])))*width)] > 0
-					|| originalROI[(int) (marrowCenter[0]+(R[et]+2)*Math.cos(Theta[et]))+ ((int) ((marrowCenter[1]+(R[et]+2)*Math.sin(Theta[et])))*width)] > 0
-					|| originalROI[(int) (marrowCenter[0]+(R[et]+3)*Math.cos(Theta[et]))+ ((int) ((marrowCenter[1]+(R[et]+3)*Math.sin(Theta[et])))*width)] > 0
-					|| originalROI[(int) (marrowCenter[0]+(R[et]+4)*Math.cos(Theta[et]))+ ((int) ((marrowCenter[1]+(R[et]+4)*Math.sin(Theta[et])))*width)] > 0
-					|| originalROI[(int) (marrowCenter[0]+(R[et]+6)*Math.cos(Theta[et]))+ ((int) ((marrowCenter[1]+(R[et]+6)*Math.sin(Theta[et])))*width)] > 0){
-				R[et] = R[et] + 0.1;
-//				increments++;
-				if (originalROI[(int) (marrowCenter[0]+R[et]*Math.cos(Theta[et]))+ ((int) ((marrowCenter[1]+R[et]*Math.sin(Theta[et])))*width)] > 0){
-					BMD_temp.add(originalROI[(int) (marrowCenter[0]+R[et]*Math.cos(Theta[et]))+ ((int) ((marrowCenter[1]+R[et]*Math.sin(Theta[et])))*width)]);}
-			}
-			Ru[et] = R[et];
-			int analysisThickness = BMD_temp.size();
-			//Dividing the cortex to three divisions -> save the mean vBMD for each division
-			if (analysisThickness < divisions){
-				break;
-			} else {
-				//cortex 
-				for (int div = 0; div<divisions;++div){
-					int mo = 0;
-					for (int ka = (int) ((double)analysisThickness*(double)div/(double)divisions);ka <(int) ((double)analysisThickness*((double)div+1.0)/(double)divisions);ka++){
-						BMDj.get(div)[et] += BMD_temp.get(ka);
-						mo++;
-					}
-					BMDj.get(div)[et] /= (double) mo;
-				}
-			}
-
-		}
-
-	}
-	void calculateRadii(){
-			//Calculate radii in polar coordinate system originating from bone marrow center of mass
-		Theta= new double[360];
-		R= new double[360];
-		R2= new double[360];
-		Rs= new double[360];
-		Ru= new double[360];
-		BMDj = new Vector<double[]>();
-		for (int i = 0;i<divisions;++i){
-			BMDj.add(new double[360]);
-		}
-		Vector<Double> BMD_temp = new Vector<Double>();
-		int et;
-		for (et = 0;et < 360;++et){ //Finding endocortical and pericortical borders uMath.sing polar coordinates
-			Theta[et]=Math.PI/180.0*et;
-			BMD_temp.clear();
-			if (et > 0){
-				R[et] = R[et-1]/2d;
-			}
-			//Anatomical endosteal border
-			while (originalROI[(int) (marrowCenter[0]+R[et]*Math.cos(Theta[et]))+ ((int) ((marrowCenter[1]+R[et]*Math.sin(Theta[et])))*width)] < threshold 
-					&& R[et] < maxRadius/pixelSpacing){
-				R[et] = R[et] + 0.1;
-			}
-			Rs[et] = R[et];
-			//Peeled endosteal border
-			while (peeledROI[(int) (marrowCenter[0]+R[et]*Math.cos(Theta[et]))+ ((int) ((marrowCenter[1]+R[et]*Math.sin(Theta[et])))*width)] < 1 
-					&& R[et] < maxRadius/pixelSpacing){
-				R[et] = R[et] + 0.1;
-			}
-			R2[et] = R[et]; 
-			R[et] = R[et]+0.1;
-			//Peeled periosteal border
-			while (peeledROI[(int) (marrowCenter[0]+R[et]*Math.cos(Theta[et]))+ ((int) ((marrowCenter[1]+R[et]*Math.sin(Theta[et])))*width)] > 0
-					|| peeledROI[(int) (marrowCenter[0]+(R[et]+0.5)*Math.cos(Theta[et]))+ ((int) ((marrowCenter[1]+(R[et]+0.5)*Math.sin(Theta[et])))*width)] > 0
-					|| peeledROI[(int) (marrowCenter[0]+(R[et]+1)*Math.cos(Theta[et]))+ ((int) ((marrowCenter[1]+(R[et]+1)*Math.sin(Theta[et])))*width)] > 0
-					|| peeledROI[(int) (marrowCenter[0]+(R[et]+2)*Math.cos(Theta[et]))+ ((int) ((marrowCenter[1]+(R[et]+2)*Math.sin(Theta[et])))*width)] > 0
-					|| peeledROI[(int) (marrowCenter[0]+(R[et]+3)*Math.cos(Theta[et]))+ ((int) ((marrowCenter[1]+(R[et]+3)*Math.sin(Theta[et])))*width)] > 0
-					|| peeledROI[(int) (marrowCenter[0]+(R[et]+4)*Math.cos(Theta[et]))+ ((int) ((marrowCenter[1]+(R[et]+4)*Math.sin(Theta[et])))*width)] > 0
-					|| peeledROI[(int) (marrowCenter[0]+(R[et]+6)*Math.cos(Theta[et]))+ ((int) ((marrowCenter[1]+(R[et]+6)*Math.sin(Theta[et])))*width)] > 0){
-				R[et] = R[et] + 0.1;
-//				increments++;
-				if (peeledROI[(int) (marrowCenter[0]+R[et]*Math.cos(Theta[et]))+ ((int) ((marrowCenter[1]+R[et]*Math.sin(Theta[et])))*width)] > 0){
-					BMD_temp.add(originalROI[(int) (marrowCenter[0]+R[et]*Math.cos(Theta[et]))+ ((int) ((marrowCenter[1]+R[et]*Math.sin(Theta[et])))*width)]);}
-			}
-			//Anatomical periosteal border
-			Ru[et] = R[et];
-			while (originalROI[(int) (marrowCenter[0]+Ru[et]*Math.cos(Theta[et]))+ ((int) ((marrowCenter[1]+Ru[et]*Math.sin(Theta[et])))*width)] > threshold
-					|| originalROI[(int) (marrowCenter[0]+(Ru[et]+0.5)*Math.cos(Theta[et]))+ ((int) ((marrowCenter[1]+(Ru[et]+0.5)*Math.sin(Theta[et])))*width)] > threshold
-					|| originalROI[(int) (marrowCenter[0]+(Ru[et]+1)*Math.cos(Theta[et]))+ ((int) ((marrowCenter[1]+(Ru[et]+1)*Math.sin(Theta[et])))*width)] > threshold
-					|| originalROI[(int) (marrowCenter[0]+(Ru[et]+2)*Math.cos(Theta[et]))+ ((int) ((marrowCenter[1]+(Ru[et]+2)*Math.sin(Theta[et])))*width)] > threshold
-					|| originalROI[(int) (marrowCenter[0]+(Ru[et]+3)*Math.cos(Theta[et]))+ ((int) ((marrowCenter[1]+(Ru[et]+3)*Math.sin(Theta[et])))*width)] > threshold
-					|| originalROI[(int) (marrowCenter[0]+(Ru[et]+4)*Math.cos(Theta[et]))+ ((int) ((marrowCenter[1]+(Ru[et]+4)*Math.sin(Theta[et])))*width)] > threshold
-					|| originalROI[(int) (marrowCenter[0]+(Ru[et]+6)*Math.cos(Theta[et]))+ ((int) ((marrowCenter[1]+(Ru[et]+6)*Math.sin(Theta[et])))*width)] > threshold){
-				Ru[et] = Ru[et] + 0.1;
-			}
-
-			int analysisThickness = BMD_temp.size();
-			//Dividing the cortex to three divisions -> save the mean vBMD for each division
-			if (analysisThickness < divisions){
-				break;
-			} else {
-				//cortex 
-				for (int div = 0; div<divisions;++div){
-					int mo = 0;
-					for (int ka = (int) ((double)analysisThickness*(double)div/(double)divisions);ka <(int) ((double)analysisThickness*((double)div+1.0)/(double)divisions);ka++){
-						BMDj.get(div)[et] += BMD_temp.get(ka);
-						mo++;
-					}
-					BMDj.get(div)[et] /= (double) mo;
-				}
-			}
-
-		}
-	}
-	
-	void erode(double[] data){
-		//Erode algorithm
-		//Modified from the best dilate by one solution taken from http://ostermiller.org/dilate_and_erode.html
-		for (int i=0; i<height; i++){
-			for (int j=0; j<width; j++){
-				if (data[i*width+j] > minimum){
-					if (i>0 && data[(i-1)*width+j]==minimum ||
-						j>0 && data[(i)*width+j-1]==minimum ||
-						i+1<height && data[(i+1)*width+j]==minimum ||
-						j+1<width && data[(i)*width+j+1]==minimum)
-						{data[i*width+j] = minimum-1;}	//Erode the pixel if any of the neighborhood pixels is background
-				}
-			}
-		}
-		for (int i=0; i<width*height; i++){
-			if (data[i] < minimum){
-				data[i] = minimum;
-			}
+			polarDistribution[j] /= divisions;
 		}
 	}
 }
