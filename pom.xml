@@ -111,7 +111,7 @@
     </properties>
 
     <build>
-        <!-- JAR needs an underscore to be recognized as plugins -->
+        <!-- JAR needs an underscore to be recognized as a plugin -->
         <finalName>pQCT_</finalName>
     </build>
 </project>
