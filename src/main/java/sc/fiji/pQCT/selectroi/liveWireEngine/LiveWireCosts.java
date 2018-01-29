@@ -28,8 +28,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package sc.fiji.pQCT.selectroi.liveWireEngine;
 
+import static java.util.Arrays.stream;
+
 import java.util.Arrays;
 import java.util.PriorityQueue;
+import java.util.function.Function;
 import java.util.stream.DoubleStream;
 
 /**
@@ -303,10 +306,11 @@ public class LiveWireCosts implements Runnable {
 			}
 		}
 
-		final DoubleStream matrixStream = Arrays.stream(gradientr).flatMapToDouble(
-			Arrays::stream);
-		final double grMax = matrixStream.max().orElse(Double.NEGATIVE_INFINITY);
-		matrixStream.forEach(g -> g = 1.0 - g / grMax);
+		final Function<double[][], DoubleStream> matrixStream = m -> stream(m)
+			.flatMapToDouble(Arrays::stream);
+		final double gradientMax = matrixStream.apply(gradientr).max().orElse(
+			Double.NEGATIVE_INFINITY);
+		matrixStream.apply(gradientr).forEach(g -> g = 1.0 - g / gradientMax);
 	}
 
 	/*initializes laplacian image zero-crossings. Marks zero-crossings with 0, otherwise the value is 1*/

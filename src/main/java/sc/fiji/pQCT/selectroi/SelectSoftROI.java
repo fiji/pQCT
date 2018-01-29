@@ -603,8 +603,11 @@ public class SelectSoftROI extends RoiSelector {
 	private boolean isPathFree(final byte[] image,
 		final List<Coordinate> pathCoordinates)
 	{
-		final List<Coordinate> coordinates = pathCoordinates.subList(1,
-			pathCoordinates.size() - 1);
+		final int size = pathCoordinates.size();
+		if (size < 2) {
+			return true;
+		}
+		final List<Coordinate> coordinates = pathCoordinates.subList(1,  size - 1);
 		return coordinates.stream().mapToInt(c -> (int) (c.ii + c.jj * width))
 			.filter(i -> image[i] == 1).count() <= 2;
 	}
