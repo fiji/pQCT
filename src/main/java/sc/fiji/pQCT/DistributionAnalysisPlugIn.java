@@ -29,6 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package sc.fiji.pQCT;
 
 import java.awt.Color;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -39,7 +40,6 @@ import java.util.stream.DoubleStream;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.Prefs;
-import ij.WindowManager;
 import ij.gui.GenericDialog;
 import ij.io.FileSaver;
 import ij.measure.Calibration;
@@ -66,7 +66,7 @@ public class DistributionAnalysisPlugIn implements PlugIn {
 
 	@Override
 	public void run(final String arg) {
-		final ImagePlus imp = WindowManager.getCurrentImage();
+		final ImagePlus imp = IJ.getImage();
 		if (imp == null) return;
 		if (imp.getType() != ImagePlus.GRAY16) {
 			IJ.error("Distribution analysis expects 16-bit greyscale data");
@@ -93,8 +93,8 @@ public class DistributionAnalysisPlugIn implements PlugIn {
 			/*Read calibration from TYP file database*/
 			final String typFileName = getInfoProperty(imageInfo, "Device");
 			try {
-				final InputStream ir = getClass().getClassLoader().getResourceAsStream(
-					"org/doube/bonej/pqct/typ/" + typFileName);
+				final ClassLoader loader = getClass().getClassLoader();
+				final InputStream ir = loader.getResourceAsStream("typ/" + typFileName);
 				final byte[] typFileData = new byte[ir.available()];
 				ir.read(typFileData);
 				ir.close();
@@ -130,8 +130,11 @@ public class DistributionAnalysisPlugIn implements PlugIn {
 				}
 				calibrationCoefficients[1] /= 1000.0; // 1.495
 			}
-			catch (final Exception err) {
-				IJ.error(err.getMessage());
+			catch (final NullPointerException npe) {
+				IJ.error(".TYP file not found");
+			}
+			catch (final IOException e) {
+				IJ.error(".TYP file could not be read");
 			}
 		}
 		double resolution = cal.pixelWidth;
