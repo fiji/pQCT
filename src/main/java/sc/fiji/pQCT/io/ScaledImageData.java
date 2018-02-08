@@ -29,7 +29,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package sc.fiji.pQCT.io;
 
 import java.util.Arrays;
-import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
 public class ScaledImageData {
@@ -77,7 +76,7 @@ public class ScaledImageData {
 			final int offset = j * height;
 			for (int i = 0; i < midW; ++i) {
 				final int sourceIndex = offset + i;
-				final int targetIndex = offset - 1 - i;
+				final int targetIndex = offset + width - 1 - i;
 				scaledImage[targetIndex] = scaledImage[sourceIndex];
 				softScaledImage[targetIndex] = softScaledImage[sourceIndex];
 			}
@@ -100,8 +99,8 @@ public class ScaledImageData {
 		final int height, final int filterSize)
 	{
 		/*Fill filtered with min value to get the frame from messing up with edge detection*/
-		final double[] filtered = DoubleStream.generate(() -> minimum).limit(width *
-			height).toArray();
+		final double[] filtered = new double[width * height];
+		Arrays.fill(filtered, minimum);
 		final double[] toMedian = new double[filterSize * filterSize];
 		final int noGo = (int) Math.floor(filterSize / 2.0);
 		final int median = (int) Math.floor(filterSize * filterSize / 2.0);
