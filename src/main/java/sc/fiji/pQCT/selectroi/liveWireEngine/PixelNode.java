@@ -52,8 +52,14 @@ class PixelNode implements Comparable<PixelNode> {
 		this.whereFrom = whereFrom;
 	}
 
+	@Override
 	public int compareTo(final PixelNode other) {
 		return Double.compare(myDistance, other.getDistance());
+	}
+
+	@Override
+	public boolean equals(final Object o) {
+		return o instanceof PixelNode && compareTo((PixelNode) o) == 0;
 	}
 
 	double getDistance() {
