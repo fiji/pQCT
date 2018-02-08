@@ -32,8 +32,6 @@ import static java.util.Arrays.stream;
 
 import java.util.Arrays;
 import java.util.PriorityQueue;
-import java.util.function.Function;
-import java.util.stream.DoubleStream;
 
 /**
  * Modified by Timo Rantalainen 2012 - 2014 from IvusSnakes
@@ -58,8 +56,8 @@ public class LiveWireCosts implements Runnable {
 	private final double[][] gradientr; // stores image gradient RESULTANT modulus
 	private final double[][] laplacian;
 	private final int[][][] whereFrom; // stores where from path started
-	private final boolean[][] visited; // stores whether the node was marked or
-																			// not
+	// stores whether the nodes were marked or not
+	private final boolean[][] visited;
 	private final int rows;
 	private final int columns;
 	private final double gw;// Gradient Magnitude Weight
@@ -121,17 +119,13 @@ public class LiveWireCosts implements Runnable {
 		int length = 0;
 		int myr = r;
 		int myc = c;
-		int nextr;
-		int nextc;
 		pathCoordinates[length] = new int[] { r, c };
 		do { // while we haven't found the seed
 			++length;
-			nextr = whereFrom[myr][myc][0];
-			nextc = whereFrom[myr][myc][1];
-			myr = nextr;
-			myc = nextc;
-			pathCoordinates[length][0] = nextr;
-			pathCoordinates[length][1] = nextc;
+			myr = whereFrom[myr][myc][0];
+			myc = whereFrom[myr][myc][1];
+			pathCoordinates[length][0] = myr;
+			pathCoordinates[length][1] = myc;
 		}
 		while (!(myr == sr && myc == sc));
 
@@ -306,11 +300,13 @@ public class LiveWireCosts implements Runnable {
 			}
 		}
 
-		final Function<double[][], DoubleStream> matrixStream = m -> stream(m)
-			.flatMapToDouble(Arrays::stream);
-		final double gradientMax = matrixStream.apply(gradientr).max().orElse(
-			Double.NEGATIVE_INFINITY);
-		matrixStream.apply(gradientr).forEach(g -> g = 1.0 - g / gradientMax);
+		final double grMax = stream(gradientr).flatMapToDouble(Arrays::stream).max()
+			.orElse(Double.NEGATIVE_INFINITY);
+		for (int i = 0; i < gradientr.length; ++i) {
+			for (int j = 0; j < gradientr[i].length; ++j) {
+				gradientr[i][j] = 1.0 - gradientr[i][j] / grMax;
+			}
+		}
 	}
 
 	/*initializes laplacian image zero-crossings. Marks zero-crossings with 0, otherwise the value is 1*/
