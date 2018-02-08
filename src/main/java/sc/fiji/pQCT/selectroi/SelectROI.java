@@ -29,7 +29,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package sc.fiji.pQCT.selectroi;
 
 import java.awt.Polygon;
-import java.util.Arrays;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
 
@@ -60,20 +59,19 @@ public class SelectROI extends RoiSelector {
 		Roi ijROI = imp.getRoi();
 		final double[] tempScaledImage = scaledImage.clone();
 		// scaledImage.clone();
-		if (ijROI != null &&
-			details.manualRoi)
-		{ /*Set pixels outside the manually selected ROI to zero*/
-			/*Check whether pixel is within ROI, mark with bone threshold*/
+		if (ijROI != null && details.manualRoi) {
+			// Set pixels outside the manually selected ROI to zero
 			for (int j = 0; j < height; j++) {
 				for (int i = 0; i < width; i++) {
 					if (!ijROI.contains(i, j)) {
+						// Check whether pixel is within ROI, mark with bone threshold
 						tempScaledImage[i + j * width] = minimum;
 					}
 				}
 			}
-			/*Check whether a polygon can be acquired and include polygon points too*/
 			final Polygon polygon = ijROI.getPolygon();
 			if (polygon != null) {
+				// Check whether a polygon can be acquired and include its points
 				for (int j = 0; j < polygon.npoints; j++) {
 					final int index = polygon.xpoints[j] + polygon.ypoints[j] * width;
 					tempScaledImage[index] = scaledImage[index];

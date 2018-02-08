@@ -28,6 +28,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package sc.fiji.pQCT.utils;
 
+import java.util.stream.Stream;
+
 import ij.ImagePlus;
 import ij.text.TextPanel;
 import sc.fiji.pQCT.DistributionAnalysisPlugIn;
@@ -50,13 +52,12 @@ public class ResultsWriter {
 		final String[] propertyNames = { "File Name", "Patient's Name",
 			"Patient ID", "Patient's Birth Date", "Acquisition Date", "Pixel Spacing",
 			"ObjLen" };
-		final String[] parameters = { Double.toString(details.airThreshold), Double
-			.toString(details.fatThreshold), Double.toString(details.muscleThreshold),
-			Double.toString(details.marrowThreshold), Double.toString(
-				details.softThreshold), Double.toString(details.rotationThreshold),
-			Double.toString(details.areaThreshold), Double.toString(
-				details.bMDThreshold), Double.toString(details.scalingFactor), Double
-					.toString(details.constant) };
+		final String[] parameters = Stream.of(details.airThreshold,
+			details.fatThreshold, details.muscleThreshold, details.marrowThreshold,
+			details.softThreshold, details.rotationThreshold, details.areaThreshold,
+			details.bMDThreshold, details.scalingFactor, details.constant).map(
+				Object::toString).toArray(String[]::new);
+		
 		final StringBuilder resultsBuilder = new StringBuilder(results);
 		if (imp != null) {
 			if (DistributionAnalysisPlugIn.getInfoProperty(imageInfo,

@@ -117,7 +117,6 @@ public class SelectSoftROI extends RoiSelector {
 			final Vector<Object> muscleMasks = getSieve(muscleImage,
 				details.muscleThreshold, "Bigger", details.guessStacked,
 				details.stacked, false, false);
-			// muscleSieve = (byte[]) muscleMasks.get(0);
 			final List<DetectedEdge> muscleEdges = (Vector<DetectedEdge>) muscleMasks
 				.get(2);
 			muscleEdges.sort(Collections.reverseOrder());
@@ -140,13 +139,12 @@ public class SelectSoftROI extends RoiSelector {
 				areaToAdd++;
 			}
 
-			/*
-			  Re-segment soft-tissues using livewire based on the muscleSieve 1)
-			  bring rays back from image edges to centre of soft-tissue mask 1 deg
-			  apart 2) use livewire on the 360 edge pixels 3) rotate livewire init
-			  pixels around a few times to get the segmentation to go through
-			  subcut/intramuscular fat
-			 */
+			// Re-segment soft-tissues using livewire based on the muscleSieve:
+			// 1) bring rays back from image edges to centre of soft-tissue mask 1 deg
+			// apart
+			// 2) use livewire on the 360 edge pixels
+			// 3) rotate livewire init pixels around a few times to get the
+			// segmentation to go through subcut/intramuscular fat
 			final Vector<Object> masks2 = getSieve(softScaledImage, softThreshold,
 				details.roiChoiceSt, details.guessStacked, details.stacked, false,
 				false);
@@ -431,7 +429,7 @@ public class SelectSoftROI extends RoiSelector {
 		final int height, final ArrayList<Integer> edgeii,
 		final ArrayList<Integer> edgejj)
 	{
-		byte[] tempMask = Arrays.copyOf(mask, mask.length);
+		byte[] tempMask = mask.clone();
 		tempMask = fillBorder(tempMask, width);
 		final int[] returnCoordinates = new int[2];
 		final int[] steer = new int[2];
@@ -542,10 +540,9 @@ public class SelectSoftROI extends RoiSelector {
 				}
 			}
 			currentI = currentI + sightIndex;
-			if (currentI > (RADIAL_DIVISIONS - 1)) {
-				break;
+			if (currentI <= (RADIAL_DIVISIONS - 1)) {
+				boundaryIndices.add(currentI);
 			}
-			boundaryIndices.add(currentI);
 		}
 
 		// Create the boundary
@@ -607,7 +604,7 @@ public class SelectSoftROI extends RoiSelector {
 		if (size < 2) {
 			return true;
 		}
-		final List<Coordinate> coordinates = pathCoordinates.subList(1,  size - 1);
+		final List<Coordinate> coordinates = pathCoordinates.subList(1, size - 1);
 		return coordinates.stream().mapToInt(c -> (int) (c.ii + c.jj * width))
 			.filter(i -> image[i] == 1).count() <= 2;
 	}
