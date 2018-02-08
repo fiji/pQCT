@@ -1,3 +1,5 @@
+[![](https://travis-ci.org/fiji/pQCT.svg?branch=master)](https://travis-ci.org/fiji/pQCT)
+
 # pQCT
 
 This repository contains tools for ImageJ1 by Timo Rantalainen (@tjrantal) that can be used to perform the following analyses on Stratec pQCT files:
