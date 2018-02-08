@@ -32,7 +32,7 @@ import java.util.stream.Stream;
 
 import ij.ImagePlus;
 import ij.text.TextPanel;
-import sc.fiji.pQCT.DistributionAnalysisPlugIn;
+import sc.fiji.pQCT.PqctAnalysis;
 import sc.fiji.pQCT.io.ImageAndAnalysisDetails;
 
 //TODO Refactor into Distribution_Analysis (make a subpackage where the massive class is chopped up?)
@@ -60,17 +60,17 @@ public class ResultsWriter {
 		
 		final StringBuilder resultsBuilder = new StringBuilder(results);
 		if (imp != null) {
-			if (DistributionAnalysisPlugIn.getInfoProperty(imageInfo,
+			if (PqctAnalysis.getInfoProperty(imageInfo,
 				"File Name") != null)
 			{
-				resultsBuilder.append(DistributionAnalysisPlugIn.getInfoProperty(
+				resultsBuilder.append(PqctAnalysis.getInfoProperty(
 					imageInfo, "File Path"));
-				resultsBuilder.append(DistributionAnalysisPlugIn.getInfoProperty(
+				resultsBuilder.append(PqctAnalysis.getInfoProperty(
 					imageInfo, "File Name")).append("\t");
 			}
 			else {
 				if (imp.getImageStackSize() == 1) {
-					resultsBuilder.append(DistributionAnalysisPlugIn.getInfoProperty(
+					resultsBuilder.append(PqctAnalysis.getInfoProperty(
 						imageInfo, "Title")).append("\t");
 				}
 				else {
@@ -79,7 +79,7 @@ public class ResultsWriter {
 				}
 			}
 			for (int i = 1; i < propertyNames.length; ++i) {
-				resultsBuilder.append(DistributionAnalysisPlugIn.getInfoProperty(
+				resultsBuilder.append(PqctAnalysis.getInfoProperty(
 					imageInfo, propertyNames[i])).append("\t");
 			}
 		}

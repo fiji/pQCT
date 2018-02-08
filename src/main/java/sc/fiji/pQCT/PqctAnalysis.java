@@ -40,6 +40,7 @@ import java.util.stream.DoubleStream;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.Prefs;
+import ij.WindowManager;
 import ij.gui.GenericDialog;
 import ij.io.FileSaver;
 import ij.measure.Calibration;
@@ -62,11 +63,12 @@ import sc.fiji.pQCT.selectroi.SelectROI;
 import sc.fiji.pQCT.selectroi.SelectSoftROI;
 import sc.fiji.pQCT.utils.ResultsWriter;
 
-public class DistributionAnalysisPlugIn implements PlugIn {
+public class PqctAnalysis implements PlugIn {
 
 	@Override
 	public void run(final String arg) {
-		final ImagePlus imp = IJ.getImage();
+		IJ.log("Launching plugin");
+		final ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp == null) return;
 		if (imp.getType() != ImagePlus.GRAY16) {
 			IJ.error("Distribution analysis expects 16-bit greyscale data");
