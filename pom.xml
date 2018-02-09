@@ -12,7 +12,8 @@
     </parent>
 
     <groupId>sc.fiji</groupId>
-    <artifactId>pQCT</artifactId>
+    <!-- Name needs an underscore to be recognized as a plugin -->
+    <artifactId>pQCT_</artifactId>
     <version>1.0.1-SNAPSHOT</version>
 
     <name>pQCT tools</name>
@@ -108,9 +109,4 @@
         <license.licenseName>BSD-2-Clause</license.licenseName>
         <license.copyrightOwners>Timo Rantalainen</license.copyrightOwners>
     </properties>
-
-    <build>
-        <!-- JAR needs an underscore to be recognized as a plugin -->
-        <finalName>pQCT_</finalName>
-    </build>
 </project>
