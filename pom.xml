@@ -13,7 +13,7 @@
 
     <groupId>sc.fiji</groupId>
     <artifactId>pQCT</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
 
     <name>pQCT tools</name>
     <description>Tools for Stratec pQCT images</description>
