@@ -54,9 +54,9 @@ public class StripStratecFileHeader implements PlugIn {
 		dialog.addCheckbox("Strip_PatName", true);
 		dialog.addCheckbox("Strip_PatTitleAndComment", false);
 		dialog.addStringField("Stratec_file_to_strip", Prefs.getDefaultDirectory() +
-			"I0020001.M01", 60);
+			"I0020001.m01", 60);
 		dialog.addStringField("File_save_name", Prefs.getDefaultDirectory() +
-			"I0020001.M01", 60);
+			"I0020001.m01", 60);
 		dialog.showDialog();
 		if (!dialog.wasOKed()) {
 			return;
@@ -113,11 +113,12 @@ public class StripStratecFileHeader implements PlugIn {
 		final boolean[] toStrip)
 	{
 		/*MeasInfo,PatBirth,PatMenoAge,PatName,PatTitle&Comment*/
-		final int[] offsetsToStrip = { 662, 1091, 1095, 1099, 1141 };
+		final int[] fromIndices = { 662, 1091, 1095, 1099, 1141 };
 		final int[] stripLengths = { 324, 4, 4, 41, 124 };
-		for (int s = 0; s < offsetsToStrip.length; ++s) {
+		for (int s = 0; s < fromIndices.length; ++s) {
 			if (toStrip[s]) {
-				Arrays.fill(data, offsetsToStrip[s], stripLengths[s], (byte) 0);
+				final int toIndex = fromIndices[s] + stripLengths[s];
+				Arrays.fill(data, fromIndices[s], toIndex, (byte) 0);
 			}
 		}
 	}
