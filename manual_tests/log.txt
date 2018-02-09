@@ -1,0 +1,72 @@
+Read Stratec file
+=======================================================================
+Steps
+-----------------------------------------------------------------------
+1. Run Plugins>pQCT>Read Stratec File
+2. Open ./manual_tests/I0025851.m01
+
+Expected result
+-----------------------------------------------------------------------
+Image opens
+
+Completed: -
+-----------------------------------------------------------------------
+
+
+Distribution Analysis
+=======================================================================
+Steps
+-----------------------------------------------------------------------
+1. Run Plugins>pQCT>Read Stratec File
+2. Open ./manual_tests/I0025851.m01
+3. Run Plugins>pQCT>Distribution Analysis
+4. Un-check "Analyse soft tissues"
+5. Check "Analyse density distribution"
+6. Click "OK"
+
+Expected result
+-----------------------------------------------------------------------
+Verify that a <image name>.dcm-result image and results table open
+
+Completed: -
+-----------------------------------------------------------------------
+
+
+Export Stratec Header
+=======================================================================
+Steps
+-----------------------------------------------------------------------
+1. Run Plugins>pQCT>Read Stratec File
+2. Open ./manual_tests/I0025851.m01
+3. Run Plugins>pQCT>Export Stratec Header
+
+Expected result
+-----------------------------------------------------------------------
+Results table opens and shows metadata, e.g.
+Patient's Name is "TIMOCALIBRATION"
+
+Completed: - 
+-----------------------------------------------------------------------
+
+
+Strip Stratec Header
+=======================================================================
+Steps
+-----------------------------------------------------------------------
+ 1. Run Plugins>pQCT>Read Stratec File
+ 2. Open ./manual_tests/I0025851.m01
+ 3. Press the "I" key and verify "Patient's name" is "TIMOCALIBRATION"
+ 4. Run Plugins>pQCT>Strip Stratec Header"
+ 5. Check "Strip PatName" (if not checked already)
+ 6. Set "Stratec file to strip" to "your/path/manual_tests/I002581.m01"
+ 7. Set "File save name" to your/path/manual_tests/test.m01"
+ 8. Run Plugins>pQCT>Read Stratec File
+ 9. Open ./manual_tests/test.m01
+10. Press the "I" key and verify "Patient's name" is empty
+
+Expected result
+-----------------------------------------------------------------------
+Selected metadata has been stripped from the new file
+
+Completed: - 
+-----------------------------------------------------------------------
