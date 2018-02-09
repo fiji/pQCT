@@ -33,8 +33,8 @@ import java.util.StringTokenizer;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
+import ij.plugin.ImageInfo;
 import ij.plugin.PlugIn;
-import ij.plugin.filter.Info;
 import ij.text.TextPanel;
 
 public class ExportHeader implements PlugIn {
@@ -51,8 +51,7 @@ public class ExportHeader implements PlugIn {
 			IJ.error("Distribution analysis expects 16-bit greyscale data");
 			return;
 		}
-		// TODO Fix deprecated call
-		imageInfo = new Info().getImageInfo(imp, imp.getChannelProcessor());
+		imageInfo = new ImageInfo().getImageInfo(imp);
 		final String imageName;
 		if (getInfoProperty(imageInfo, "File Name") != null) {
 			imageName = getInfoProperty(imageInfo, "File Name");
@@ -82,7 +81,7 @@ public class ExportHeader implements PlugIn {
 			percent = ct.percent;
 		}
 		catch (final Exception err) {
-			IJ.log("CT header " + err.toString());
+			IJ.log("Failed to read CT header");
 			site = "Unknown";
 			percent = Double.NaN;
 		}

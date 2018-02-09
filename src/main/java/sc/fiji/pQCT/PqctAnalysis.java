@@ -44,8 +44,8 @@ import ij.WindowManager;
 import ij.gui.GenericDialog;
 import ij.io.FileSaver;
 import ij.measure.Calibration;
+import ij.plugin.ImageInfo;
 import ij.plugin.PlugIn;
-import ij.plugin.filter.Info;
 import ij.process.FloatProcessor;
 import ij.process.ImageConverter;
 import ij.process.ImageProcessor;
@@ -67,7 +67,6 @@ public class PqctAnalysis implements PlugIn {
 
 	@Override
 	public void run(final String arg) {
-		IJ.log("Launching plugin");
 		final ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp == null) return;
 		if (imp.getType() != ImagePlus.GRAY16) {
@@ -80,8 +79,7 @@ public class PqctAnalysis implements PlugIn {
 		// analysis sectors
 		final int[] sectorsAndDivisions = { 10, 3, 10, 10 };
 
-		// TODO replace calls to deprecated code
-		String imageInfo = new Info().getImageInfo(imp, imp.getChannelProcessor());
+		String imageInfo = new ImageInfo().getImageInfo(imp);
 		// Check image calibration
 		final Calibration cal = imp.getCalibration();
 		double[] calibrationCoefficients = { 0, 1 };
