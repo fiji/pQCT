@@ -50,9 +50,8 @@ public abstract class RoiSelector {
 	public final double minimum;
 	public final int height;
 	public final int width;
-	public final double areaThreshold; // For cortical area analyses (CoA, sSI, I)
-																			// +
-	// peeling distal pixels
+	// For cortical area analyses (CoA, sSI, I), and peeling distal pixels
+	public final double areaThreshold;
 	public final double BMDthreshold; // For cortical bMD analyses
 	public final ScaledImageData scaledImageData;
 	public final ImagePlus imp;
@@ -105,8 +104,8 @@ public abstract class RoiSelector {
 		// Fill the area enclosed by the traced edge contained in roiI,roiJ
 		// beginning needs to be within the traced edge
 		byte[] sieveTemp = new byte[width * height];
-		int i;
-		int j;
+		int x;
+		int y;
 		for (int z = 0; z < roiI.size(); ++z) {
 			sieveTemp[roiI.get(z) + roiJ.get(z) * width] = 1;
 		}
@@ -119,49 +118,35 @@ public abstract class RoiSelector {
 			if (tempCoordinates == null) {
 				return sieveTemp;
 			}
-			i = tempCoordinates[0];
-			j = tempCoordinates[1];
+			x = tempCoordinates[0];
+			y = tempCoordinates[1];
 
-			final Vector<Integer> initialI = new Vector<>();
-			final Vector<Integer> initialJ = new Vector<>();
-			initialI.add(i);
-			initialJ.add(j);
-			sieveTemp[i + j * width] = 1;
+			final Vector<Integer> initialX = new Vector<>();
+			final Vector<Integer> initialY = new Vector<>();
+			initialX.add(x);
+			initialY.add(y);
+			sieveTemp[x + y * width] = 1;
 			final byte[] sieveTemp2 = sieveTemp.clone();
 			boolean noLeak = true;
-			while (!initialI.isEmpty()) {
-				i = initialI.lastElement();
-				j = initialJ.lastElement();
-				initialI.remove(initialI.size() - 1);
-				initialJ.remove(initialJ.size() - 1);
-
-				if (sieveTemp2[i + j * width] == 0) {
-					sieveTemp2[i + j * width] = 1;
-
+			while (!initialX.isEmpty()) {
+				x = initialX.remove(initialX.size() - 1);
+				y = initialY.remove(initialY.size() - 1);
+				final int index = x + y * width;
+				if (sieveTemp2[index] == 0) {
+					sieveTemp2[index] = 1;
 				}
-				if (i < 1 || i >= width - 1 || j < 1 || j >= height - 1) {
+				if (x < 1 || x >= width - 1 || y < 1 || y >= height - 1) {
 					noLeak = false;
 					break;
 				}
-				// check whether the neighbour to the left should be added to the queue
-				if (sieveTemp2[i - 1 + j * width] == 0) {
-					initialI.add(i - 1);
-					initialJ.add(j);
-				}
-				// check whether the neighbour to the right should be added to the queue
-				if (sieveTemp2[i + 1 + j * width] == 0) {
-					initialI.add(i + 1);
-					initialJ.add(j);
-				}
-				// check whether the neighbour below should be added to the queue
-				if (sieveTemp2[i + (j - 1) * width] == 0) {
-					initialI.add(i);
-					initialJ.add(j - 1);
-				}
-				// check whether the neighbour above should be added to the queue
-				if (sieveTemp2[i + (j + 1) * width] == 0) {
-					initialI.add(i);
-					initialJ.add(j + 1);
+				// Check 4-connected neighbours
+				for (int j = y - 1; j <= y + 1; j+=2) {
+					for (int i = x - 1; i <= x + 1; i+=2) {
+						if (sieveTemp2[i + j * width] == 0) {
+							initialX.add(i);
+							initialY.add(j);
+						}
+					}
 				}
 			}
 			if (noLeak) {
