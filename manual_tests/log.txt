@@ -9,7 +9,7 @@ Expected result
 -----------------------------------------------------------------------
 Image opens
 
-Completed: -
+Completed: February 9 2018 Richard Domander
 -----------------------------------------------------------------------
 
 
@@ -28,7 +28,7 @@ Expected result
 -----------------------------------------------------------------------
 Verify that a <image name>.dcm-result image and results table open
 
-Completed: -
+Completed: February 9 2018 Richard Domander
 -----------------------------------------------------------------------
 
 
@@ -45,7 +45,7 @@ Expected result
 Results table opens and shows metadata, e.g.
 Patient's Name is "TIMOCALIBRATION"
 
-Completed: - 
+Completed: February 9 2018 Richard Domander
 -----------------------------------------------------------------------
 
 
@@ -68,5 +68,5 @@ Expected result
 -----------------------------------------------------------------------
 Selected metadata has been stripped from the new file
 
-Completed: - 
+Completed: February 9 2018 Richard Domander
 -----------------------------------------------------------------------
