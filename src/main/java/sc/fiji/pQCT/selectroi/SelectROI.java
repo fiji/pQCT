@@ -39,6 +39,11 @@ import ij.gui.Roi;
 import sc.fiji.pQCT.io.ImageAndAnalysisDetails;
 import sc.fiji.pQCT.io.ScaledImageData;
 
+//Debugging
+import ij.IJ;		//Float Images
+import ij.process.FloatProcessor;		//Float Images
+import ij.process.ByteProcessor;
+
 public class SelectROI extends RoiSelector {
 
 	public final Vector<DetectedEdge> edges;
@@ -113,6 +118,18 @@ public class SelectROI extends RoiSelector {
 				selection).iit.size(), Roi.POLYGON);
 			imp.setRoi(ijROI);
 		}
+		
+		//Visualise scaledImage
+		/*
+		ImagePlus tempImage = new ImagePlus("peeledROI");
+		tempImage.setProcessor(new FloatProcessor(width,height,scaledImage));
+		tempImage.show();
+		
+		ImagePlus tempImage2 = new ImagePlus("sieve");
+		tempImage2.setProcessor(new ByteProcessor(width,height,sieve));
+		tempImage2.setDisplayRange(0,1);
+		tempImage2.show();
+		*/
 
 		for (int j = 0; j < height; j++) {
 			for (int i = 0; i < width; i++) {
@@ -125,11 +142,11 @@ public class SelectROI extends RoiSelector {
 					boneMarrowRoiI.add(i);
 					boneMarrowRoiJ.add(j);
 				}
-				else if (scaledImage[index] >= areaThreshold) {
+				if (scaledImage[index] >= areaThreshold) {
 					cortexAreaRoiI.add(i);
 					cortexAreaRoiJ.add(j);
 				}
-				else if (scaledImage[index] >= BMDthreshold) {
+				if (scaledImage[index] >= BMDthreshold) {
 					cortexROI[index] = scaledImage[index];
 					cortexRoiI.add(i);
 					cortexRoiJ.add(j);

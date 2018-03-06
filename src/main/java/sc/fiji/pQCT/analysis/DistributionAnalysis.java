@@ -30,12 +30,18 @@ package sc.fiji.pQCT.analysis;
 
 import static java.util.Arrays.stream;
 import static java.util.stream.IntStream.range;
+import java.util.function.DoubleConsumer;
 
 import java.util.List;
 import java.util.Vector;
 
 import sc.fiji.pQCT.io.ImageAndAnalysisDetails;
 import sc.fiji.pQCT.selectroi.SelectROI;
+
+//Debugging
+import ij.IJ;
+import ij.ImagePlus;					//Image creation
+import ij.process.FloatProcessor;		//Float Images
 
 public class DistributionAnalysis {
 
@@ -88,24 +94,59 @@ public class DistributionAnalysis {
 		height = roi.height;
 		width = roi.width;
 		pixelSpacing = roi.pixelSpacing;
-		originalROI = roi.cortexROI.clone();
-		peeledROI = roi.cortexROI.clone();
+		originalROI = clone(roi.cortexROI);
+		peeledROI = clone(roi.cortexROI);
+		
+		//Visualise roi
+		ImagePlus tempImage = new ImagePlus("peeledROI");
+		tempImage.setProcessor(new FloatProcessor(width,height,peeledROI));
+		tempImage.show();
+		
+		//Test peeledROI min and max values
+		final int peeledSize = width * height;
+		double testMax =  range(0, peeledSize).mapToDouble(i -> {return peeledROI[i];}).max().orElse(0d);
+		double testMin =  range(0, peeledSize).mapToDouble(i -> {return peeledROI[i];}).min().orElse(0d);
+		IJ.log("MAx prior to erode "+testMax+" min "+testMin);
 		erode(peeledROI);
+		testMax = range(0, peeledSize).mapToDouble(i -> {return peeledROI[i];}).max().orElse(0d);
+		testMin = range(0, peeledSize).mapToDouble(i -> {return peeledROI[i];}).min().orElse(0d);
+		IJ.log("MAx after erode "+testMax+" min "+testMin);
+		
+		
 		for (int i = 0; i < marrowI.size(); i++) {
 			marrowCenter[0] += marrowI.get(i);
 			marrowCenter[1] += marrowJ.get(i);
 		}
 		marrowCenter[0] /= marrowI.size();
 		marrowCenter[1] /= marrowJ.size();
-		final int peeledSize = width * height;
+		
 		peeledBMD = range(0, peeledSize).filter(i -> peeledROI[i] >= threshold)
 			.average().orElse(0.0);
+		IJ.log("PeeledBMD "+peeledBMD);
+		//tämä ei toimi
+		
+		//range(0,peeledSize).forEach(i -> {IJ.log("i "+peeledROI[i]);});
+		
+		range(0, peeledSize).filter(i -> peeledROI[i] >= threshold)
+			.mapToDouble(index -> {
+				final int j = index / width;
+				final int i = index - width * j;
+				final double x = i - marrowCenter[0];
+				final double y = j - marrowCenter[1];
+				
+				return Math.sqrt(x * x + y * y);
+			}).forEach(eachZ -> {IJ.log("Rad test "+eachZ);});
+			//}).forEach((double eachZ) -> {IJ.log("Rad "+eachZ);});
+			//}).forEach(z -> {IJ.log("Rad "+z);});
+			//}).forEach(z -> IJ.log("X "+x+" Y "+y+" mx "+x+" my "+y+" rad "+Math.sqrt(x * x + y * y)););
+		
 		maxRadius = range(0, peeledSize).filter(i -> peeledROI[i] >= threshold)
 			.mapToDouble(index -> {
 				final int j = index / width;
 				final int i = index - width * j;
 				final double x = i - marrowCenter[0];
 				final double y = j - marrowCenter[1];
+				//IJ.log("X "+x+" Y "+y+" mx "+x+" my "+y+" rad "+Math.sqrt(x * x + y * y));
 				return Math.sqrt(x * x + y * y);
 			}).max().orElse(0.0);
 		if (preventPeeling) {
@@ -115,6 +156,14 @@ public class DistributionAnalysis {
 			calculateRadii();
 		}
 		rotateResults();
+	}
+	
+	private double[] clone(double[] a){
+		double[] b = new double[a.length];
+		for (int i = 0;i<a.length;++i){
+			b[i] = a[i];
+		}
+		return b;
 	}
 
 	// TODO Add a boolean parameter preventPeeling, and combine method with
@@ -168,6 +217,9 @@ public class DistributionAnalysis {
 			// division
 			final double analysisThickness = BMD_temp.size();
 			if (analysisThickness < divisions) {
+				IJ.log("Too thin "+et
+						+" r2[et] "+r2[et]
+						+" r[et] "+r[et]);
 				break;
 			}
 			for (int div = 0; div < divisions; ++div) {
@@ -222,6 +274,7 @@ public class DistributionAnalysis {
 			// Dividing the cortex to three divisions -> save the mean vBMD for each
 			// division
 			if (analysisThickness < divisions) {
+				//IJ.log("Too thin "+et);
 				break;
 			}
 			for (int div = 0; div < divisions; ++div) {
@@ -275,6 +328,8 @@ public class DistributionAnalysis {
 		while (true) {
 			final int index = (int) (x + expandedR * cos + (y + expandedR * sin) *
 				width);
+			int index2 = (int) (x+expandedR*cos)+ ((int) (y+expandedR*sin)*width);
+			IJ.log("Index ri "+index+" index t "+index2+" val ri "+roi[index]+" val t "+roi[index2]+" threshold "+threshold+" maxRadius "+maxRadius);
 			if (roi[index] >= threshold || expandedR >= maxR) {
 				break;
 			}

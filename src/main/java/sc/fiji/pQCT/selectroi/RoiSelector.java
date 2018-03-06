@@ -42,6 +42,12 @@ import ij.ImagePlus;
 import sc.fiji.pQCT.io.ImageAndAnalysisDetails;
 import sc.fiji.pQCT.io.ScaledImageData;
 
+
+//Debugging
+import ij.IJ;		//Float Images
+import ij.process.FloatProcessor;		//Float Images
+import ij.process.ByteProcessor;
+
 public abstract class RoiSelector {
 
 	public final ImageAndAnalysisDetails details;
@@ -101,6 +107,9 @@ public abstract class RoiSelector {
 		final Vector<Integer> roiJ, final int width, final int height,
 		final double[] scaledImage, final double threshold)
 	{
+		
+		final int[][] fourconnectedNHood = {{-1,0},{1,0},{0,-1},{0,1}};
+		
 		// Fill the area enclosed by the traced edge contained in roiI,roiJ
 		// beginning needs to be within the traced edge
 		byte[] sieveTemp = new byte[width * height];
@@ -126,11 +135,13 @@ public abstract class RoiSelector {
 			initialX.add(x);
 			initialY.add(y);
 			sieveTemp[x + y * width] = 1;
-			final byte[] sieveTemp2 = sieveTemp.clone();
+			byte[] sieveTemp2 = clone(sieveTemp);
 			boolean noLeak = true;
 			while (!initialX.isEmpty()) {
+				
 				x = initialX.remove(initialX.size() - 1);
 				y = initialY.remove(initialY.size() - 1);
+				
 				final int index = x + y * width;
 				if (sieveTemp2[index] == 0) {
 					sieveTemp2[index] = 1;
@@ -140,21 +151,44 @@ public abstract class RoiSelector {
 					break;
 				}
 				// Check 4-connected neighbours
-				for (int j = y - 1; j <= y + 1; j+=2) {
-					for (int i = x - 1; i <= x + 1; i+=2) {
-						if (sieveTemp2[i + j * width] == 0) {
-							initialX.add(i);
-							initialY.add(j);
-						}
+				for (int nh = 0; nh<fourconnectedNHood.length;++nh) {
+					if (sieveTemp2[x+fourconnectedNHood[nh][0] + (y+fourconnectedNHood[nh][1])* width] == 0) {
+						initialX.add(x+fourconnectedNHood[nh][0]);
+						initialY.add(y+fourconnectedNHood[nh][1]);
 					}
+
 				}
+				
 			}
 			if (noLeak) {
-				sieveTemp = sieveTemp2;
+				sieveTemp = clone(sieveTemp2);
+				//Visualise sieve here
+				/*
+				ImagePlus tempImage2 = new ImagePlus("sieve");
+				tempImage2.setProcessor(new ByteProcessor(width,height,sieveTemp));
+				tempImage2.setDisplayRange(0,1);
+				tempImage2.show();
+				*/
 			}
 		}
 	}
 
+	protected double[] clone(double[] a){
+		double[] b = new double[a.length];
+		for (int i = 0;i<a.length;++i){
+			b[i] = a[i];
+		}
+		return b;
+	}
+	
+	protected byte[] clone(byte[] a){
+		byte[] b = new byte[a.length];
+		for (int i = 0;i<a.length;++i){
+			b[i] = a[i];
+		}
+		return b;
+	}
+	
 	/*DetectedEdge*/
 	public static int[] twoLargestBonesDetectedEdges(
 		final List<DetectedEdge> edges)
