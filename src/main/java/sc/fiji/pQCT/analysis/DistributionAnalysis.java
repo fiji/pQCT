@@ -39,9 +39,9 @@ import sc.fiji.pQCT.io.ImageAndAnalysisDetails;
 import sc.fiji.pQCT.selectroi.SelectROI;
 
 //Debugging
-import ij.IJ;
-import ij.ImagePlus;					//Image creation
-import ij.process.FloatProcessor;		//Float Images
+//import ij.IJ;
+//import ij.ImagePlus;					//Image creation
+//import ij.process.FloatProcessor;		//Float Images
 
 public class DistributionAnalysis {
 
@@ -76,6 +76,11 @@ public class DistributionAnalysis {
 		final ImageAndAnalysisDetails details, final DetermineAlpha determineAlpha)
 	{
 		pInd = determineAlpha.pind;
+		
+		//for (int d = 0;d<pInd.size();++d){
+		//	IJ.log("Mapping pINd "+d+" value "+pInd.get(d));
+		//}
+		
 		sectorWidth = details.sectorWidth;
 		final int size = (int) (360 / sectorWidth);
 		endocorticalRadii = new double[size];
@@ -98,19 +103,19 @@ public class DistributionAnalysis {
 		peeledROI = clone(roi.cortexROI);
 		
 		//Visualise roi
-		ImagePlus tempImage = new ImagePlus("peeledROI");
-		tempImage.setProcessor(new FloatProcessor(width,height,peeledROI));
-		tempImage.show();
+		//ImagePlus tempImage = new ImagePlus("peeledROI");
+		//tempImage.setProcessor(new FloatProcessor(width,height,peeledROI));
+		//tempImage.show();
 		
 		//Test peeledROI min and max values
 		final int peeledSize = width * height;
 		double testMax =  range(0, peeledSize).mapToDouble(i -> {return peeledROI[i];}).max().orElse(0d);
 		double testMin =  range(0, peeledSize).mapToDouble(i -> {return peeledROI[i];}).min().orElse(0d);
-		IJ.log("MAx prior to erode "+testMax+" min "+testMin);
+		//IJ.log("MAx prior to erode "+testMax+" min "+testMin);
 		erode(peeledROI);
 		testMax = range(0, peeledSize).mapToDouble(i -> {return peeledROI[i];}).max().orElse(0d);
 		testMin = range(0, peeledSize).mapToDouble(i -> {return peeledROI[i];}).min().orElse(0d);
-		IJ.log("MAx after erode "+testMax+" min "+testMin);
+		//IJ.log("MAx after erode "+testMax+" min "+testMin);
 		
 		
 		for (int i = 0; i < marrowI.size(); i++) {
@@ -240,11 +245,11 @@ public class DistributionAnalysis {
 				bMDJ.get(div)[et] /= mo;
 				
 			}
-			/*
-			IJ.log("Sector "+et+" Endo "+bMDJ.get(0)[et]
-								+" Mid "+bMDJ.get(1)[et]
-								+" Peri "+bMDJ.get(2)[et]);
-			*/
+			
+			//IJ.log("Sector "+et+" Endo "+bMDJ.get(0)[et]
+			//					+" Mid "+bMDJ.get(1)[et]
+			//					+" Peri "+bMDJ.get(2)[et]);
+			
 		}
 	}
 
@@ -322,30 +327,34 @@ public class DistributionAnalysis {
 	private void rotateResults() {
 		// Calculate the endocortical and pericortical radii along with the
 		// corresponding radii after peeling one layer of pixels
-		final double[] pRad = rU.clone();
+		final double[] pRad = clone(rU);//
 		stream(pRad).forEach(r -> r *= pixelSpacing);
-		final double[] eRad = rS.clone();
+		final double[] eRad = clone(rS);//rS.clone();
 		stream(eRad).forEach(r -> r *= pixelSpacing);
-		final double[] pPRad = r.clone();
+		final double[] pPRad = clone(r);//r.clone();
 		stream(pPRad).forEach(r -> r *= pixelSpacing);
-		final double[] pERad = r2.clone();
+		final double[] pERad = clone(r2);//r2.clone();
 		stream(pERad).forEach(r -> r *= pixelSpacing);
 		final int size = (int) (360 / sectorWidth);
 		final double[][] corticalDensity = new double[(int) divisions][size];
 		// Calculate the division and sector values of vBMD
 		for (int pp = 0; pp < size; ++pp) {
 			for (int dd = 0; dd < (int) sectorWidth; ++dd) {
-				final int index = pInd.get((int) (pp * sectorWidth + dd));
+				int index = pInd.get((int) (pp * sectorWidth + dd));
 				endocorticalRadii[pp] += eRad[index] / sectorWidth;
 				pericorticalRadii[pp] += pRad[index] / sectorWidth;
 				// Cortex
 				endoCorticalBMDs[pp] += bMDJ.get(0)[index] / sectorWidth;
 				midCorticalBMDs[pp] += bMDJ.get(1)[index] / sectorWidth;
 				periCorticalBMDs[pp] += bMDJ.get(2)[index] / sectorWidth;
+				//IJ.log("pp "+pp+" index "+index);
 			}
 			corticalDensity[0][pp] = endoCorticalBMDs[pp];
 			corticalDensity[1][pp] = midCorticalBMDs[pp];
 			corticalDensity[2][pp] = periCorticalBMDs[pp];
+			
+			//IJ.log("corticalDensity pp "+pp+" endo "+corticalDensity[0][pp]+" mid "+corticalDensity[1][pp]+" peri "+corticalDensity[2][pp]);
+			
 		}
 
 		// Radial distribution
@@ -353,15 +362,17 @@ public class DistributionAnalysis {
 			for (int j = 0; j < size; ++j) {
 				radialDistribution[i] += corticalDensity[i][j];
 			}
-			radialDistribution[i] /= size;
+			radialDistribution[i] /= (double) size;
+			//IJ.log("Division "+i+" vBMD "+radialDistribution[i]);
 		}
-
+		
 		// Polar distribution
 		for (int j = 0; j < size; ++j) {
 			for (int i = 0; i < divisions; ++i) {
 				polarDistribution[j] += corticalDensity[i][j];
 			}
-			polarDistribution[j] /= divisions;
+			polarDistribution[j] /= (double) divisions;
+			//IJ.log("Sector "+j+" vBMD "+polarDistribution[j]);
 		}
 	}
 }

@@ -279,7 +279,7 @@ public class DetermineAlpha {
 	private Vector<Integer> rotateIndex(final int rotationAngle) {
 		final int initialIndex = 360 - Math.abs(rotationAngle);
 		final Vector<Integer> rotateIndexVector = Stream.iterate(initialIndex,
-			i -> i++ % 360).limit(360).collect(toCollection(Vector::new));
+			i -> i+1).limit(360).map(ii -> {return ii % 360;}).collect(toCollection(Vector::new));
 		/*Flip rotateIndexVector, for e.g. comparing left to right*/
 		if (details.flipDistribution) {
 			Collections.reverse(rotateIndexVector);

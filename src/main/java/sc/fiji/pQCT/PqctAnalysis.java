@@ -186,7 +186,7 @@ public class PqctAnalysis implements PlugIn {
 			"Limit_ROI_search_to_manually_selected",
 			"Set_distribution_results_rotation_manually" };
 		final boolean[] middleDefaults = new boolean[10];
-		middleDefaults[4] = true;
+		middleDefaults[3] = true;
 		dialog.addCheckboxGroup(4, 3, middleLabels, middleDefaults);
 
 		dialog.addNumericField("Manual_rotation_[+-_180_deg]", 0.0, 4, 8, null);
