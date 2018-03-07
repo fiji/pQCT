@@ -171,21 +171,23 @@ public class ResultsWriter {
 			}
 
 			final int iterations = (360 / details.sectorWidth);
+			//Add polar results headings first
 			for (int i = 0; i < iterations; ++i) {
-				final String rowStart = (i * details.sectorWidth) + "?- " + ((i + 1) *
-					details.sectorWidth);
 				headings.append("\t").append("Polar sector ").append(i).append(
 					" vBMD [mg/cm3]");
-				headings.append("\t").append(rowStart).append(
-					" ?endocortical radius [mm]");
-				headings.append("\t").append(rowStart).append(
-					" ?pericortical radius [mm]");
-				headings.append("\t").append(rowStart).append(
-					" ?endocortical vBMD [mg/cm3]");
-				headings.append("\t").append(rowStart).append(
-					" ?midcortical vBMD [mg/cm3]");
-				headings.append("\t").append(rowStart).append(
-					" ?pericortical vBMD [mg/cm3]");
+			}
+			
+			
+			final String[] varNames = {" endocortical radius [mm]"," pericortical radius [mm]"," endocortical vBMD [mg/cm3]"," midcortical vBMD [mg/cm3]"," pericortical vBMD [mg/cm3]"};
+			
+			
+			//add variables with similar naming convention in two loops
+			for (int v = 0;v<varNames.length;++v){
+				for (int i = 0; i < iterations; ++i) {
+					final String rowStart = (i * details.sectorWidth) + " - " + ((i + 1) *
+						details.sectorWidth);
+					headings.append("\t").append(rowStart).append(varNames[v]);
+				}
 			}
 		}
 		textPanel.setColumnHeadings(headings.toString());

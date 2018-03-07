@@ -226,7 +226,7 @@ public class DistributionAnalysis {
 			if (preventPeeling){
 				rU[et] = r[et];
 			}else{
-				rU[et] = expandRadiusMulti(originalROI, threshold, rU[et], x, y, cosTheta,sinTheta);
+				rU[et] = expandRadiusMulti(originalROI, threshold, r[et], x, y, cosTheta,sinTheta);
 			}
 
 			// Dividing the cortex to three divisions -> save the mean vBMD for each
