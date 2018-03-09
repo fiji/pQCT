@@ -28,6 +28,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package sc.fiji.pQCT.analysis;
 
+import static java.util.Arrays.stream;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
@@ -150,10 +152,10 @@ public class ConcentricRingAnalysis {
 
 	private void rotateResults() {
 		//Calculate pericortical radii
-		double[] pRad = DistributionAnalysis.clone(rU);
+		//Double[] pRad = DistributionAnalysis.clone(rU);
 		//IJ.log(String.format("rU length %d",rU.length));
 		//IJ.log(String.format("pRad length %d",pRad.length));
-		Arrays.stream(pRad).forEach(r -> r *= pixelSpacing);
+		double[] pRad =(double []) stream(rU).map(r -> {return r *= pixelSpacing;}).toArray();
 		//IJ.log(String.format("pRad length %d",pRad.length));
 		final int size = (int) (360.0 / sectorWidth);
 		//IJ.log(String.format("size %d",size));

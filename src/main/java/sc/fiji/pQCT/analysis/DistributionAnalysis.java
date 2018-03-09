@@ -39,9 +39,9 @@ import sc.fiji.pQCT.io.ImageAndAnalysisDetails;
 import sc.fiji.pQCT.selectroi.SelectROI;
 
 //Debugging
-//import ij.IJ;
-//import ij.ImagePlus;					//Image creation
-//import ij.process.FloatProcessor;		//Float Images
+import ij.IJ;
+import ij.ImagePlus;					//Image creation
+import ij.process.FloatProcessor;		//Float Images
 
 public class DistributionAnalysis {
 
@@ -61,7 +61,7 @@ public class DistributionAnalysis {
 	public final double peeledBMD;
 	private final double pixelSpacing;
 	private final double[] originalROI;
-	private final double[] peeledROI;
+	private double[] peeledROI;
 	private final double sectorWidth;
 	private final double divisions;
 	private final double minimum;
@@ -103,19 +103,24 @@ public class DistributionAnalysis {
 		peeledROI = clone(roi.cortexROI);
 		
 		//Visualise roi
-		//ImagePlus tempImage = new ImagePlus("peeledROI");
-		//tempImage.setProcessor(new FloatProcessor(width,height,peeledROI));
-		//tempImage.show();
+		ImagePlus tempImage = new ImagePlus("peeledROI");
+		tempImage.setProcessor(new FloatProcessor(width,height,peeledROI));
+		tempImage.show();
 		
 		//Test peeledROI min and max values
 		final int peeledSize = width * height;
-		double testMax =  range(0, peeledSize).mapToDouble(i -> {return peeledROI[i];}).max().orElse(0d);
-		double testMin =  range(0, peeledSize).mapToDouble(i -> {return peeledROI[i];}).min().orElse(0d);
-		//IJ.log("MAx prior to erode "+testMax+" min "+testMin);
-		erode(peeledROI);
-		testMax = range(0, peeledSize).mapToDouble(i -> {return peeledROI[i];}).max().orElse(0d);
-		testMin = range(0, peeledSize).mapToDouble(i -> {return peeledROI[i];}).min().orElse(0d);
-		//IJ.log("MAx after erode "+testMax+" min "+testMin);
+		
+		double peeledBMDb = range(0, peeledSize).filter(i -> peeledROI[i] >= threshold).mapToDouble(ii -> {return peeledROI[ii];})
+			.average().orElse(0.0);
+		IJ.log("Before peeling PeeledBMD "+peeledBMDb);
+		
+		peeledROI = erode(peeledROI,width,height,minimum);
+		
+		
+		//Visualise roi
+		ImagePlus tempImage2 = new ImagePlus("After peeling");
+		tempImage2.setProcessor(new FloatProcessor(width,height,peeledROI));
+		tempImage2.show();
 		
 		
 		for (int i = 0; i < marrowI.size(); i++) {
@@ -127,7 +132,7 @@ public class DistributionAnalysis {
 		
 		peeledBMD = range(0, peeledSize).filter(i -> peeledROI[i] >= threshold).mapToDouble(ii -> {return peeledROI[ii];})
 			.average().orElse(0.0);
-		//IJ.log("PeeledBMD "+peeledBMD);
+		IJ.log("After peeling PeeledBMD "+peeledBMD);
 
 		
 		//range(0,peeledSize).forEach(i -> {IJ.log("i "+peeledROI[i]);});
@@ -211,23 +216,30 @@ public class DistributionAnalysis {
 					rTemp -= 0.1;				
 				}
 			}
-			r[et] = rTemp;
+			
+			//Identify anatomical periosteal border			
+			if (preventPeeling){
+				rU[et] = rTemp;
+			}else{
+				rU[et] = expandRadiusMulti(originalROI, threshold, rTemp, x, y, cosTheta,sinTheta);
+			}
 
-			final long bMDIterations = (long) ((r[et] - r2[et])/0.1);
-			for (int i = 1; i <= bMDIterations; i++) {
-				double radius = r2[et] + i * 0.1;
-				int index = (int) ((x + radius * cosTheta) + ((int) (y + radius * sinTheta)) * width);
-				if (peeledROI[index] > 0) {
-					BMD_temp.add(originalROI[index]);
+			//Get BMD through the cortex by repeating the incrementing
+			while (r[et]<rU[et]){
+				r[et] = r[et] + 0.1;
+				int index = (int) (x+r[et]*cosTheta)+ (((int) (y+r[et]*sinTheta))*width);
+				if (preventPeeling){
+					if (originalROI[index] > 0){
+						BMD_temp.add(originalROI[index]);
+					}
+				}else{
+					if (peeledROI[index] > 0){
+						BMD_temp.add(originalROI[index]);
+					}
 				}
 			}
-
-			// Anatomical periosteal border			
-			if (preventPeeling){
-				rU[et] = r[et];
-			}else{
-				rU[et] = expandRadiusMulti(originalROI, threshold, r[et], x, y, cosTheta,sinTheta);
-			}
+			
+			//Get the BMDs here
 
 			// Dividing the cortex to three divisions -> save the mean vBMD for each
 			// division
@@ -242,42 +254,39 @@ public class DistributionAnalysis {
 					bMDJ.get(div)[et] += BMD_temp.get(ka);
 					mo++;
 				}
-				bMDJ.get(div)[et] /= mo;
+				bMDJ.get(div)[et] /= (double) mo;
 				
 			}
-			
-			//IJ.log("Sector "+et+" Endo "+bMDJ.get(0)[et]
-			//					+" Mid "+bMDJ.get(1)[et]
-			//					+" Peri "+bMDJ.get(2)[et]);
-			
 		}
 	}
 
 	// TODO Refactor into a static utility method for all classes instead of
 	// repeating code
-	private void erode(final double[] data) {
+	public static double[] erode(double[] data,int width,int height,double bgVal) {
 		// Erode algorithm
 		// Modified from the best dilate by one solution taken from
 		// http://ostermiller.org/dilate_and_erode.html
-		for (int i = 0; i < height; i++) {
-			for (int j = 0; j < width; j++) {
+		for (int i = 1; i < height-1; i++) {
+			for (int j = 1; j < width-1; j++) {
 				final int index = i * width + j;
-				if (data[index] > minimum) {
-					if (i > 0 && data[(i - 1) * width + j] == minimum || j > 0 &&
-						data[(i) * width + j - 1] == minimum || i + 1 < height && data[(i +
-							1) * width + j] == minimum || j + 1 < width && data[(i) * width +
-								j + 1] == minimum)
+				if (data[index] > bgVal) {
+					if (data[(i - 1) * width + j] == bgVal | 
+						data[(i) * width + j - 1] == bgVal |
+						data[(i + 1) * width + j] == bgVal |
+						data[(i) * width +j + 1] == bgVal)
 					{
-						data[index] = minimum - 1;
+						data[index] = bgVal - 1;
+						IJ.log(String.format("Eroding i %d j %d",i,j)); 
 					} // Erode the pixel if any of the neighborhood pixels is background
 				}
 			}
 		}
 		for (int i = 0; i < width * height; i++) {
-			if (data[i] < minimum) {
-				data[i] = minimum;
+			if (data[i] < bgVal) {
+				data[i] = bgVal;
 			}
 		}
+		return data;
 	}
 
 	// TODO Replace while(roi[x + r * cos(theta) ...]) loops with similar methods
@@ -327,14 +336,10 @@ public class DistributionAnalysis {
 	private void rotateResults() {
 		// Calculate the endocortical and pericortical radii along with the
 		// corresponding radii after peeling one layer of pixels
-		final double[] pRad = clone(rU);//
-		stream(pRad).forEach(r -> r *= pixelSpacing);
-		final double[] eRad = clone(rS);//rS.clone();
-		stream(eRad).forEach(r -> r *= pixelSpacing);
-		final double[] pPRad = clone(r);//r.clone();
-		stream(pPRad).forEach(r -> r *= pixelSpacing);
-		final double[] pERad = clone(r2);//r2.clone();
-		stream(pERad).forEach(r -> r *= pixelSpacing);
+		final double[] pRad = (double []) stream(rU).map(r -> {return r *= pixelSpacing;}).toArray();
+		final double[] eRad =  (double []) stream(rS).map(r -> {return r *= pixelSpacing;}).toArray();
+		final double[] pPRad = (double []) stream(r).map(r -> {return r *= pixelSpacing;}).toArray();
+		final double[] pERad = (double []) stream(r2).map(r -> {return r *= pixelSpacing;}).toArray();
 		final int size = (int) (360 / sectorWidth);
 		final double[][] corticalDensity = new double[(int) divisions][size];
 		// Calculate the division and sector values of vBMD

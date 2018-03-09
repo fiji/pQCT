@@ -100,9 +100,7 @@ public class SelectROI extends RoiSelector {
 				ycoordinates[i] = boneEdges.get(selection).jiit.get(i);
 			}
 			/*Flip the original image prior to adding the ROI, if scaled image is flipped*/
-			if ((details.flipHorizontal || details.flipVertical) && imp
-				.getRoi() != null)
-			{
+			if ((details.flipHorizontal || details.flipVertical) && imp.getRoi() != null){
 				// Remove existing ROIs in order to flip the whole image...
 				IJ.run(imp, "Select None", "");
 			}
@@ -136,20 +134,22 @@ public class SelectROI extends RoiSelector {
 				final int index = i + j * width;
 				if (sieve[index] <= 0) {
 					cortexROI[index] = minimum;
-					continue;
-				}
-				if (scaledImage[index] < areaThreshold) {
-					boneMarrowRoiI.add(i);
-					boneMarrowRoiJ.add(j);
-				}
-				if (scaledImage[index] >= areaThreshold) {
-					cortexAreaRoiI.add(i);
-					cortexAreaRoiJ.add(j);
-				}
-				if (scaledImage[index] >= BMDthreshold) {
-					cortexROI[index] = scaledImage[index];
-					cortexRoiI.add(i);
-					cortexRoiJ.add(j);
+				}else{
+					//Within sieve
+					if (scaledImage[index] < areaThreshold) {
+						boneMarrowRoiI.add(i);
+						boneMarrowRoiJ.add(j);
+						cortexROI[index] = minimum;
+					}else{
+						cortexAreaRoiI.add(i);
+						cortexAreaRoiJ.add(j);
+						if (scaledImage[index] >= BMDthreshold) {
+							cortexROI[index] = scaledImage[index];
+							cortexRoiI.add(i);
+							cortexRoiJ.add(j);
+						}
+					}
+
 				}
 			}
 		}
