@@ -35,6 +35,9 @@ import java.util.Vector;
 import sc.fiji.pQCT.io.ImageAndAnalysisDetails;
 import sc.fiji.pQCT.selectroi.SelectROI;
 
+//Debugging
+//import ij.IJ;
+
 public class ConcentricRingAnalysis {
 
 	private final double pixelSpacing;
@@ -77,10 +80,11 @@ public class ConcentricRingAnalysis {
 		}
 		boneCenter[0] = boneCenter[0] / points;
 		boneCenter[1] = boneCenter[1] / points;
-		calculateRadii();
-		rotateResults();
 		final int size = (int) (360.0 / sectorWidth);
 		pericorticalRadii = new double[size];
+		calculateRadii();
+		rotateResults();
+		
 	}
 
 	private void calculateRadii() {
@@ -145,9 +149,14 @@ public class ConcentricRingAnalysis {
 	}
 
 	private void rotateResults() {
-		final double[] pRad = Arrays.stream(rU).map(r -> r * pixelSpacing)
-			.toArray();
+		//Calculate pericortical radii
+		double[] pRad = DistributionAnalysis.clone(rU);
+		//IJ.log(String.format("rU length %d",rU.length));
+		//IJ.log(String.format("pRad length %d",pRad.length));
+		Arrays.stream(pRad).forEach(r -> r *= pixelSpacing);
+		//IJ.log(String.format("pRad length %d",pRad.length));
 		final int size = (int) (360.0 / sectorWidth);
+		//IJ.log(String.format("size %d",size));
 		for (int div = 0; div < divisions; ++div) {
 			BMDs.add(new double[size]);
 		}
@@ -156,12 +165,15 @@ public class ConcentricRingAnalysis {
 		// Calculate the division and sector values of vBMD
 		for (int pp = 0; pp < size; pp++) {
 			for (int dd = 0; dd < (int) sectorWidth; dd++) {
-				final int index = (int) (pp * sectorWidth + dd);
-				pericorticalRadii[pp] += pRad[pind.get(index)] / sectorWidth;
+				int index = pind.get((int) (pp * sectorWidth + dd));
+				//IJ.log(String.format("pp %d dd %d index %d length prRad %d length pRad %d",pp,dd,index,
+				//			pericorticalRadii.length, pRad.length));
+				pericorticalRadii[pp] += pRad[index] / sectorWidth;
 				for (int div = 0; div < divisions; ++div) {
-					BMDs.get(div)[pp] += bMDJ.get(div)[pind.get(index)] / sectorWidth;
+					BMDs.get(div)[pp] += bMDJ.get(div)[index] / sectorWidth;
 				}
 			}
 		}
+		
 	}
 }

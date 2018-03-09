@@ -159,7 +159,7 @@ public class DistributionAnalysis {
 		rotateResults();
 	}
 	
-	private double[] clone(double[] a){
+	public static double[] clone(double[] a){
 		double[] b = new double[a.length];
 		for (int i = 0;i<a.length;++i){
 			b[i] = a[i];
