@@ -44,9 +44,14 @@ import ij.gui.Roi;
 import sc.fiji.pQCT.io.ImageAndAnalysisDetails;
 import sc.fiji.pQCT.io.ScaledImageData;
 
-public class SelectSoftROI extends RoiSelector {
+//Debugging
+import ij.IJ;		//Float Images
+import ij.process.FloatProcessor;		//Float Images
+import ij.process.ByteProcessor;
 
-	private static final int RADIAL_DIVISIONS = 720;
+public class SelectSoftROI extends RoiSelector {
+	
+	private final int RADIAL_DIVISIONS = 720;
 	public byte[] eroded;
 
 	// ImageJ constructor
@@ -72,7 +77,7 @@ public class SelectSoftROI extends RoiSelector {
 			final Roi ijROI = imp.getRoi();
 			if (ijROI != null && details.manualRoi) {
 				// Set pixels outside the manually selected ROI to zero
-				final double[] tempScaledImage = softScaledImage.clone();
+				final double[] tempScaledImage = clone(softScaledImage);
 				// Check whether pixel is within ROI, mark with bone threshold
 				for (int j = 0; j < height; j++) {
 					for (int i = 0; i < width; i++) {
@@ -100,13 +105,39 @@ public class SelectSoftROI extends RoiSelector {
 			// Erode three layers of pixels from the fat sieve to get rid of higher
 			// density layer (i.e. skin) on top of fat to enable finding muscle border
 
-			byte[] muscleSieve = softSieve.clone();
-			final double[] muscleImage = softScaledImage.clone();
-			final byte[] subCutaneousFat = softSieve.clone();
+			byte[] muscleSieve = clone(softSieve);
+			final double[] muscleImage = clone(softScaledImage);
+			
+			
+			//DEBUGGING
+			/*
+			ImagePlus tempImage2 = new ImagePlus("sieve");
+			tempImage2.setProcessor(new ByteProcessor(width,height,clone(muscleSieve)));
+			tempImage2.setDisplayRange(0,1);
+			tempImage2.show();
+			*/
+			
 			// Remove skin by eroding three layers of pixels
 			for (int i = 0; i < 3; ++i) {
-				erode(muscleSieve);
+				muscleSieve = erode(muscleSieve);
+				/*
+				final int size = width * height;
+				int tempCount = 0;
+				for (int jj = 0; jj<size;++jj){
+					if (muscleSieve[jj] == 1)
+						++tempCount;
+				}
+				IJ.log(String.format("Eroding %d count %d",i,tempCount));
+				*/
 			}
+			final byte[] subCutaneousFat = clone(muscleSieve);	//The three layers of skin removed
+			/*
+			ImagePlus tempImage3 = new ImagePlus("erodedsieve");
+			tempImage3.setProcessor(new ByteProcessor(width,height,muscleSieve));
+			tempImage3.setDisplayRange(0,1);
+			tempImage3.show();
+			*/
+			
 			// Remove everything other than the selected limb from the image
 			for (int i = 0; i < muscleSieve.length; ++i) {
 				if (muscleSieve[i] < 1) {
@@ -139,101 +170,22 @@ public class SelectSoftROI extends RoiSelector {
 				areaToAdd++;
 			}
 
-			// Re-segment soft-tissues using livewire based on the muscleSieve:
-			// 1) bring rays back from image edges to centre of soft-tissue mask 1 deg
-			// apart
-			// 2) use livewire on the 360 edge pixels
-			// 3) rotate livewire init pixels around a few times to get the
-			// segmentation to go through subcut/intramuscular fat
-			final Vector<Object> masks2 = getSieve(softScaledImage, softThreshold,
-				details.roiChoiceSt, details.guessStacked, details.stacked, false,
-				false);
-			final byte[] boneResult = (byte[]) masks2.get(1);
-			final Collection<Double> ii = new ArrayList<>();
-			final Collection<Double> jj = new ArrayList<>();
-			final double[] softCentre = new double[2];
-
-			for (int i = 0; i < width; ++i) {
-				for (int j = 0; j < height; ++j) {
-					if (boneResult[i + j * width] > 0) {
-						ii.add((double) i);
-						jj.add((double) j);
-						softCentre[0] += i;
-						softCentre[1] += j;
-					}
-				}
-			}
-
-			softCentre[0] /= ii.size();
-			softCentre[1] /= jj.size();
-
-			final double maxR = Math.sqrt(Math.pow(Math.max(Math.abs(softCentre[0] -
-				width), softCentre[0]), 2.0) + Math.pow(Math.max(Math.abs(
-					softCentre[1] - height), softCentre[1]), 2.0));
-			final double[] rs = new double[RADIAL_DIVISIONS];
-			double r;
-			double t;
-			final double[] theta = new double[RADIAL_DIVISIONS];
-			final int[][] edgeCoords = new int[RADIAL_DIVISIONS][2];
-			// Get the extremes of muscle area with 1 deg increments in polar
-			// coordinates
-			for (int i = 0; i < RADIAL_DIVISIONS; ++i) {
-				r = maxR;
-				t = i / (RADIAL_DIVISIONS * 2.0 * Math.PI);
-				while (Math.round(r * Math.cos(t) + softCentre[0]) < 0 || Math.round(r *
-					Math.sin(t) + softCentre[1]) < 0 || Math.round(r * Math.cos(t) +
-						softCentre[0]) >= width || Math.round(r * Math.sin(t) +
-							softCentre[1]) >= height)
-				{
-					r -= 0.1;
-				}
-				while (Math.round(r * Math.cos(t) + softCentre[0]) >= 0 && Math.round(
-					r * Math.sin(t) + softCentre[1]) >= 0 && Math.round(r * Math.cos(t) +
-						softCentre[0]) < width && Math.round(r * Math.sin(t) +
-							softCentre[1]) < height && muscleSieve[(int) (Math.round(r * Math
-								.cos(t) + softCentre[0]) + Math.round(r * Math.sin(t) +
-									softCentre[1]) * width)] < 1)
-				{
-					r -= 0.1;
-				}
-				rs[i] = r;
-				theta[i] = t;
-				edgeCoords[i][0] = (int) (Math.round(rs[i] * Math.cos(theta[i]) +
-					softCentre[0]));
-				edgeCoords[i][1] = (int) (Math.round(rs[i] * Math.sin(theta[i]) +
-					softCentre[1]));
-			}
-
-			// Arraylists for edge, and livewire seed coordinates
-			ArrayList<Integer> edgeii = new ArrayList<>();
-			ArrayList<Integer> edgejj = new ArrayList<>();
-
-			// Create list of seed coordinates
-			for (int i = 0; i < RADIAL_DIVISIONS; ++i) {
-				edgeii.add(edgeCoords[i][0]);
-				edgejj.add(edgeCoords[i][1]);
-			}
-			final Vector<Object> tempVO = getLassoEdge(edgeii, edgejj, softCentre,
-				muscleSieve);
-			edgeii = (ArrayList<Integer>) tempVO.get(0);
-			edgejj = (ArrayList<Integer>) tempVO.get(1);
-
-			// Fill in muscle mask with inter-muscular fat
-			muscleSieve = getByteMask(width, height, edgeii, edgejj);
 			// Dilate the sieve to include all muscle pixels
-			muscleSieve = dilateMuscleMask(muscleSieve, softScaledImage, width,
-				height, muscleThreshold);
-			/*Re-segmenting done*/
-
-			// Wipe muscle area +3 layer of pixels away from subcut.
-			final byte[] tempMuscleSieve = Arrays.copyOf(muscleSieve,
-				muscleSieve.length);
+			byte[] tempMuscleSieve = clone(muscleSieve);
+			tempMuscleSieve = dilate(tempMuscleSieve, (byte) 1, (byte) 0, (byte) 2);
+			
 			eroded = new byte[softSieve.length];
 			for (int i = 0; i < tempMuscleSieve.length; ++i) {
 				if (tempMuscleSieve[i] == 1) {
 					subCutaneousFat[i] = 0;
 				}
 			}
+			
+			/* create temp boneResult to wipe out bone and marrow */
+			final Vector<Object> masks2 = getSieve(softScaledImage, softThreshold, details.roiChoiceSt,
+					details.guessStacked, details.stacked, false, false);
+			final byte[] boneResult = (byte[]) masks2.get(1);
+			
 
 			for (int i = 0; i < softSieve.length; ++i) {
 				if (softSieve[i] == 1 && softScaledImage[i] >= airThreshold &&
@@ -268,8 +220,16 @@ public class SelectSoftROI extends RoiSelector {
 					tempMuscleSieve[i] == 0)
 				{
 					eroded[i] = 1; // Skin eroded pixels
+					//softSieve[i] = 1;	//Flip the soft-sieve as well, debugging
 				}
 			}
+			
+			/*
+			ImagePlus tempImage3 = new ImagePlus("softSieve");
+			tempImage3.setProcessor(new ByteProcessor(width,height,softSieve));
+			tempImage3.setDisplayRange(0,7);
+			tempImage3.show();
+			*/
 		}
 	}
 
@@ -429,7 +389,7 @@ public class SelectSoftROI extends RoiSelector {
 		final int height, final ArrayList<Integer> edgeii,
 		final ArrayList<Integer> edgejj)
 	{
-		byte[] tempMask = mask.clone();
+		byte[] tempMask = clone(mask);
 		tempMask = fillBorder(tempMask, width);
 		final int[] returnCoordinates = new int[2];
 		final int[] steer = new int[2];

@@ -276,7 +276,7 @@ public class DistributionAnalysis {
 						data[(i) * width +j + 1] == bgVal)
 					{
 						data[index] = bgVal - 1;
-						IJ.log(String.format("Eroding i %d j %d",i,j)); 
+						//IJ.log(String.format("Eroding i %d j %d",i,j)); 
 					} // Erode the pixel if any of the neighborhood pixels is background
 				}
 			}

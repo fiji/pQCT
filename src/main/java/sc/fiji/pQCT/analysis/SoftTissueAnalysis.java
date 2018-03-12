@@ -34,6 +34,9 @@ import java.util.stream.IntStream;
 
 import sc.fiji.pQCT.selectroi.SelectSoftROI;
 
+//Debugging
+import ij.IJ;		//log
+
 public class SoftTissueAnalysis {
 
 	public double muA;
@@ -65,6 +68,13 @@ public class SoftTissueAnalysis {
 		final double[][] stats = IntStream.range(1, 8).mapToObj(
 			typeStatistics::apply).map(summary -> new double[] { summary.getCount(),
 				summary.getAverage() }).toArray(double[][]::new);
+				
+		for (int i = 0;i<stats.length;++i){
+			IJ.log(String.format("Stats %d one %.2f two %.2f",i,stats[i][0],stats[i][1]));
+		}
+		
+		//Revert these back to the old ones...
+				
 		final double areaScale = roi.pixelSpacing * roi.pixelSpacing / 100.0;
 		limbA = stats[0][0] * areaScale;
 		limbD = stats[0][1];

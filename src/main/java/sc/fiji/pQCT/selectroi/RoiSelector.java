@@ -173,7 +173,7 @@ public abstract class RoiSelector {
 		}
 	}
 
-	protected double[] clone(double[] a){
+	protected static double[] clone(double[] a){
 		double[] b = new double[a.length];
 		for (int i = 0;i<a.length;++i){
 			b[i] = a[i];
@@ -181,7 +181,7 @@ public abstract class RoiSelector {
 		return b;
 	}
 	
-	protected byte[] clone(byte[] a){
+	protected static byte[] clone(byte[] a){
 		byte[] b = new byte[a.length];
 		for (int i = 0;i<a.length;++i){
 			b[i] = a[i];
@@ -385,7 +385,7 @@ public abstract class RoiSelector {
 		return returnVectorVectorPointer;
 	}
 
-	private byte[] dilate(final byte[] data, final byte dilateVal, final byte min,
+	protected byte[] dilate(final byte[] data, final byte dilateVal, final byte min,
 		final byte temp)
 	{
 		// Dilate algorithm
@@ -1084,16 +1084,18 @@ public abstract class RoiSelector {
 		return sleeve;
 	}
 
-	void erode(final byte[] data) {
+	public byte[] erode(byte[] data) {
 		// Erode algorithm
 		// Modified from the best dilate by one solution taken from
 		// http://ostermiller.org/dilate_and_erode.html
-		for (int i = 0; i < height; i++) {
-			for (int j = 0; j < width; j++) {
+		for (int i = 1; i < height-1; i++) {
+			for (int j = 1; j < width-1; j++) {
 				if (data[i * width + j] > 0) {
-					if (i > 0 && data[(i - 1) * width + j] == 0 || j > 0 && data[(i) *
-						width + j - 1] == 0 || i + 1 < height && data[(i + 1) * width +
-							j] == 0 || j + 1 < width && data[(i) * width + j + 1] == 0)
+					if (	data[(i - 1)	* width + j] == 0
+						| 	data[(i) 		* width + j - 1] == 0
+						| 	data[(i + 1)	* width +j] == 0
+						| 	data[(i)		* width + j + 1] == 0
+						)
 					{
 						data[i * width + j] = -1;
 					} // Erode the pixel if any of the neighborhood pixels is background
@@ -1103,6 +1105,7 @@ public abstract class RoiSelector {
 		for (int i = 0; i < data.length; i++) {
 			data[i] = (byte) Math.max(0, data[i]);
 		}
+		return data;
 	}
 
 	/*DetectedEdges*/
