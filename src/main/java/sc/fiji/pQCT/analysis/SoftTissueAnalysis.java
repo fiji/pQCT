@@ -61,53 +61,86 @@ public class SoftTissueAnalysis {
 	public double peeledD;
 
 	public SoftTissueAnalysis(final SelectSoftROI roi) {
-		final int roiSize = roi.width * roi.height;
-		final Function<Integer, DoubleSummaryStatistics> typeStatistics =
-			type -> IntStream.range(0, roiSize).filter(i -> roi.softSieve[i] == type)
-				.mapToDouble(i -> roi.softScaledImage[i]).summaryStatistics();
-		final double[][] stats = IntStream.range(1, 8).mapToObj(
-			typeStatistics::apply).map(summary -> new double[] { summary.getCount(),
-				summary.getAverage() }).toArray(double[][]::new);
-				
-		for (int i = 0;i<stats.length;++i){
-			IJ.log(String.format("Stats %d one %.2f two %.2f",i,stats[i][0],stats[i][1]));
+
+		double weightedFatArea = 0;
+		double weightedLimbArea = 0;
+		for (int i =0;i<roi.width*roi.height;i++){
+			if (roi.softSieve[i] >0){ //Bone & Marrow not excluded!!
+				limbA +=1;
+				limbD +=roi.softScaledImage[i];
+				weightedLimbArea += roi.softScaledImage[i]+1000.0;
+			}
+			if (roi.softSieve[i] ==2 || roi.softSieve[i] ==4 || roi.softSieve[i] ==5){ //Fat
+				fatA +=1;
+				fatD +=roi.softScaledImage[i];
+				weightedFatArea += roi.softScaledImage[i]+1000.0;
+			}
+			if (roi.softSieve[i] ==3){ //Muscle no IntraFat
+				muA +=1;
+				muD +=roi.softScaledImage[i];
+				totalMuA	+=1;
+				totalMuD	+=roi.softScaledImage[i];
+			}
+			if (roi.softSieve[i] ==4){ //IntraFat
+				intraMuFatA	+=1;
+				intraMuFatD	+=roi.softScaledImage[i];
+				totalMuA	+=1;
+				totalMuD	+=roi.softScaledImage[i];
+				//weightedFatArea += roi.softScaledImage[i]+1000.0;
+			}
+			if (roi.softSieve[i] ==5){ //subCutFat
+				subCutFatA	+=1;
+				subCutFatD	+=roi.softScaledImage[i];
+				//weightedFatArea += roi.softScaledImage[i]+1000.0;
+			}
+			if (roi.softSieve[i] ==6){ //Bone area
+				boneA	+=1;
+				boneD	+=roi.softScaledImage[i];
+			}
+			if (roi.softSieve[i] ==7){ //MedFat
+				meA	+=1;
+				meD	+=roi.softScaledImage[i];
+			}
+			if (roi.eroded[i] ==1){ //PeeledA
+				peeledA	+=1;
+				peeledD	+=roi.softScaledImage[i];
+			}
+			
 		}
 		
-		//Revert these back to the old ones...
-				
 		final double areaScale = roi.pixelSpacing * roi.pixelSpacing / 100.0;
-		limbA = stats[0][0] * areaScale;
-		limbD = stats[0][1];
-		final double weightedLimbArea = stats[0][0] + 1000 * limbA;
-		final double totalFatSum = stats[1][0] + stats[3][0] + stats[4][0];
-		final double totalFatCount = stats[1][1] + stats[3][1] + stats[4][1];
-		fatA = totalFatCount * areaScale;
-		fatD = totalFatSum / totalFatCount;
-		final double weightedFatArea = totalFatSum + totalFatCount * 1000;
-		muA = stats[2][0] * areaScale;
-		muD = stats[2][1];
-		intraMuFatA = stats[3][0];
-		intraMuFatD = stats[3][1];
-		final double totalMuscleCount = stats[2][0] + stats[3][0];
-		final double totalMuscleSum = stats[2][1] + stats[3][1];
-		totalMuA = totalMuscleCount * areaScale;
-		totalMuD = totalMuscleSum / totalMuscleCount;
-		subCutFatA = stats[4][0] * areaScale;
-		subCutFatD = stats[4][1];
-		boneA = stats[5][0] * areaScale;
-		boneD = stats[5][1];
-		meA = stats[6][0] * areaScale;
-		meD = stats[6][1];
-		final DoubleSummaryStatistics peeledStats = IntStream.range(0, roiSize)
-			.filter(i -> roi.eroded[i] == 1).mapToDouble(i -> roi.softScaledImage[i])
-			.summaryStatistics();
-		peeledD = peeledStats.getAverage();
-		peeledA = peeledStats.getCount() * areaScale;
-		final double[] subCFatPixels = IntStream.range(0, roiSize).filter(
-			i -> roi.softSieve[i] == 5).mapToDouble(i -> roi.softScaledImage[i])
-			.sorted().toArray();
-		subCutFatDMedian = median(subCFatPixels);
-		fatPercentage = (weightedFatArea / weightedLimbArea) * 100.0;
+		limbD/=limbA;
+		limbA*=areaScale;
+		fatD/=fatA;
+		fatA*=areaScale;
+		
+		meD/=meA;
+		meA*=areaScale;
+		boneD/=boneA;
+		boneA*=areaScale;
+		peeledD/=peeledA;
+		peeledA*=areaScale;
+		
+		//Added SubCutFatDMedian 2016/01/08
+		double[] subCFatPixels = new double[(int) subCutFatA];
+		int cnt =0;
+		for (int i =0;i<roi.width*roi.height;i++){
+			if (roi.softSieve[i] ==5){ //subCutFat
+				subCFatPixels[cnt]+=roi.softScaledImage[i];
+				++cnt;
+			}
+		}
+		subCutFatDMedian = median(subCFatPixels);		
+		subCutFatD/=subCutFatA;
+		subCutFatA*=areaScale;
+		muD/=muA;
+		muA*=areaScale;
+		totalMuD/=totalMuA;
+		totalMuA*=areaScale;
+		intraMuFatD/=intraMuFatA;
+		intraMuFatA*=areaScale;
+		fatPercentage = (weightedFatArea/weightedLimbArea)*100.0;
+		
 	}
 
 	// TODO Use a pre-existing method
