@@ -131,25 +131,21 @@ public class SelectROI extends RoiSelector {
 
 		for (int j = 0; j < height; j++) {
 			for (int i = 0; i < width; i++) {
-				final int index = i + j * width;
-				if (sieve[index] <= 0) {
+				int index = i + j * width;
+				if (scaledImage[index]<areaThreshold & sieve[index] > 0){
+					boneMarrowRoiI.add(i);
+					boneMarrowRoiJ.add(j);
+				}
+				if (scaledImage[index]>=areaThreshold & sieve[index] > 0){
+					cortexAreaRoiI.add(i);
+					cortexAreaRoiJ.add(j);
+				}
+				if (scaledImage[index]>=BMDthreshold & sieve[index] > 0){
+					cortexROI[index] = scaledImage[index];				
+					cortexRoiI.add(i);
+					cortexRoiJ.add(j);
+				} else {
 					cortexROI[index] = minimum;
-				}else{
-					//Within sieve
-					if (scaledImage[index] < areaThreshold) {
-						boneMarrowRoiI.add(i);
-						boneMarrowRoiJ.add(j);
-						cortexROI[index] = minimum;
-					}else{
-						cortexAreaRoiI.add(i);
-						cortexAreaRoiJ.add(j);
-						if (scaledImage[index] >= BMDthreshold) {
-							cortexROI[index] = scaledImage[index];
-							cortexRoiI.add(i);
-							cortexRoiJ.add(j);
-						}
-					}
-
 				}
 			}
 		}
