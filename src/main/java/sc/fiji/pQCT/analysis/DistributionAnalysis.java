@@ -110,13 +110,6 @@ public class DistributionAnalysis {
 		*/
 		//Test peeledROI min and max values
 		final int peeledSize = width * height;
-		
-		
-		
-		double peeledBMDb = range(0, peeledSize).filter(i -> peeledROI[i] >= threshold).mapToDouble(ii -> {return peeledROI[ii];})
-			.average().orElse(0.0);
-		IJ.log("Before peeling PeeledBMD "+peeledBMDb);
-		
 		peeledROI = erode(peeledROI,width,height,minimum);
 		
 		
@@ -128,28 +121,13 @@ public class DistributionAnalysis {
 		*/
 		
 		for (int i = 0; i < marrowI.size(); i++) {
-			marrowCenter[0] += marrowI.get(i);
-			marrowCenter[1] += marrowJ.get(i);
+			marrowCenter[0] += (double) marrowI.get(i);
+			marrowCenter[1] += (double) marrowJ.get(i);
 		}
-		marrowCenter[0] /= marrowI.size();
-		marrowCenter[1] /= marrowJ.size();
+		marrowCenter[0] /= (double) marrowI.size();
+		marrowCenter[1] /= (double) marrowJ.size();
 		
 		peeledBMD = range(0, peeledSize).filter(i -> peeledROI[i] >= threshold).mapToDouble(ii -> {return peeledROI[ii];}).average().orElse(0.0);
-		
-		//Test caculating peeledBMD in a loop
-		double testPeeleedBMD = 0;
-		int tempCounter = 0;
-		for (int j = 0; j< height;j++){
-			for (int i = 0; i<width;i++){
-				if (peeledROI[i+j*width] >= threshold){
-					++tempCounter;
-					testPeeleedBMD+=peeledROI[i+j*width];
-				}
-			}
-		}
-		testPeeleedBMD/=((double) tempCounter);	
-		
-		IJ.log("After peeling PeeledBMD "+peeledBMD+" testPeeled "+testPeeleedBMD);
 
 		
 		//range(0,peeledSize).forEach(i -> {IJ.log("i "+peeledROI[i]);});
