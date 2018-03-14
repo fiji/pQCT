@@ -147,10 +147,10 @@ public class DistributionAnalysis {
 		*/
 		maxRadius = range(0, peeledSize).filter(i -> peeledROI[i] >= threshold)
 			.mapToDouble(index -> {
-				final int j = index / width;
+				final int j = (int) Math.floor(index / width);
 				final int i = index - width * j;
-				final double x = i - marrowCenter[0];
-				final double y = j - marrowCenter[1];
+				final double x = ((double) i) - marrowCenter[0];
+				final double y = ((double) j) - marrowCenter[1];
 				//IJ.log("X "+x+" Y "+y+" mx "+x+" my "+y+" rad "+Math.sqrt(x * x + y * y));
 				return Math.sqrt(x * x + y * y);
 			}).max().orElse(0.0);
@@ -181,7 +181,7 @@ public class DistributionAnalysis {
 			final Vector<Double> BMD_temp = new Vector<>();
 			theta[et] = Math.PI / 180.0 * et;
 			if (et > 0) {
-				r[et] = r[et - 1] / 2.0;
+				r[et] = rS[et - 1] / 2.0;
 			}
 
 			// Anatomical endosteal border
@@ -220,7 +220,7 @@ public class DistributionAnalysis {
 			}
 
 			//Get BMD through the cortex by repeating the incrementing
-			while (r[et]<rU[et]){
+			while (r[et]<rTemp){
 				r[et] = r[et] + 0.1;
 				int index = (int) (x+r[et]*cosTheta)+ (((int) (y+r[et]*sinTheta))*width);
 				if (preventPeeling){
@@ -290,12 +290,12 @@ public class DistributionAnalysis {
 		final double sin)
 	{
 		double expandedR = radius;
-		final double maxR = maxRadius / pixelSpacing;
+		final double maxR = maxRadius;
 		while (true) {
 			//final int index = (int) (x + expandedR * cos + (y + expandedR * sin) * width);
-			final int index = (int) (x+expandedR*cos)+ (((int) (y+expandedR*sin))*width);
+			int index = (int) (x+expandedR*cos)+ (((int) (y+expandedR*sin))*width);
 			//IJ.log("Index ri "+index+" val "+roi[index]+" threshold "+threshold+" maxRadius "+maxRadius);
-			if (roi[index] >= threshold || expandedR >= maxR) {
+			if (roi[index] >= threshold | expandedR >= maxR) {
 				break;
 			}
 			expandedR += 0.1;
@@ -316,7 +316,7 @@ public class DistributionAnalysis {
 				expandedR + 2.0, expandedR + 3.0, expandedR + 4.0, expandedR + 6.0 };
 			final int[] indices = stream(radii).mapToInt(r -> (int) ((x + r * cos) +
 				((int) (y + r * sin)) * width)).toArray();
-			if (stream(indices).noneMatch(i -> roi[i] > threshold) ||
+			if (stream(indices).noneMatch(i -> roi[i] > threshold) |
 				expandedR >= maxR)
 			{
 				break;
