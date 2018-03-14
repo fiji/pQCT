@@ -275,15 +275,45 @@ public class DetermineAlpha {
 			}
 		}
 	}
-
+	
+	
 	private Vector<Integer> rotateIndex(final int rotationAngle) {
 		final int initialIndex = 360 - Math.abs(rotationAngle);
 		final Vector<Integer> rotateIndexVector = Stream.iterate(initialIndex,
 			i -> i+1).limit(360).map(ii -> {return ii % 360;}).collect(toCollection(Vector::new));
-		/*Flip rotateIndexVector, for e.g. comparing left to right*/
+		//Flip rotateIndexVector, for e.g. comparing left to right
 		if (details.flipDistribution) {
 			Collections.reverse(rotateIndexVector);
 		}
 		return rotateIndexVector;
 	}
+	
+	/*
+	Vector<Integer> rotateIndex(int rotationAngle){
+		int initialIndex = 0;
+		Vector<Integer> rotateIndexVector = new Vector<Integer>();
+		if (rotationAngle >= 0){
+			initialIndex = 360-rotationAngle; 
+		}else{
+			initialIndex = -rotationAngle;
+		}
+		int inde;
+		inde = initialIndex;
+		while (inde<360){
+			rotateIndexVector.add(inde);
+			++inde;
+		}
+		inde=0;
+		while (inde < initialIndex){
+			rotateIndexVector.add(inde);
+			++inde;
+		}
+		
+		//Flip rotateIndexVector, for e.g. comparing left to right
+		if (details.flipDistribution){
+			Collections.reverse(rotateIndexVector);
+		}
+		return rotateIndexVector;
+	}
+	*/
 }

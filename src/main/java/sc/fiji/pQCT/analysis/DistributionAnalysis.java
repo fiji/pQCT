@@ -70,7 +70,7 @@ public class DistributionAnalysis {
 	private final double[] rU = new double[360];
 	private final List<double[]> bMDJ = new Vector<>();
 	private final Vector<Integer> pInd;
-	private final double maxRadius;
+	private double maxRadius;
 
 	public DistributionAnalysis(final SelectROI roi,
 		final ImageAndAnalysisDetails details, final DetermineAlpha determineAlpha)
@@ -126,6 +126,7 @@ public class DistributionAnalysis {
 		}
 		marrowCenter[0] /= (double) marrowI.size();
 		marrowCenter[1] /= (double) marrowJ.size();
+		IJ.log("C0 "+marrowCenter[0]+" C1 "+marrowCenter[1]);
 		
 		peeledBMD = range(0, peeledSize).filter(i -> peeledROI[i] >= threshold).mapToDouble(ii -> {return peeledROI[ii];}).average().orElse(0.0);
 
@@ -145,16 +146,56 @@ public class DistributionAnalysis {
 			//}).forEach(z -> {IJ.log("Rad "+z);});
 			//}).forEach(z -> IJ.log("X "+x+" Y "+y+" mx "+x+" my "+y+" rad "+Math.sqrt(x * x + y * y)););
 		*/
+		//Try old implementation here
+		Vector<Integer> cortexI = new Vector<Integer>();
+		Vector<Integer> cortexJ = new Vector<Integer>();
+		double maxRadiusY = 0;
+		for (int j = 0; j< height;j++){
+			for (int i = 0; i<width;i++){
+				if (peeledROI[i+j*width] >= threshold){
+					if (Math.sqrt((i-marrowCenter[0])*(i-marrowCenter[0])+(j-marrowCenter[1])*(j-marrowCenter[1])) > maxRadiusY){
+						maxRadiusY = Math.sqrt((i-marrowCenter[0])*(i-marrowCenter[0])+(j-marrowCenter[1])*(j-marrowCenter[1]));
+					}
+				}
+				if (originalROI[i+j*width] >= threshold){
+					cortexI.add(i);
+					cortexJ.add(j);
+				}
+			}
+		}
+		double[] cortexCenter = new double[2];
+		for (int i = 0; i< cortexI.size();i++){
+			cortexCenter[0]+=(double)cortexI.get(i);
+			cortexCenter[1]+=(double)cortexJ.get(i);
+
+		}
+		cortexCenter[0] /=(double)cortexI.size();
+		cortexCenter[1] /=(double)cortexJ.size();
+		maxRadiusY = 0; //y for cortical pixels. used for BSI calculations, i.e. density weighted section modulus
+		for (int i = 0; i< cortexI.size();i++){
+			if (Math.sqrt(((double)cortexI.get(i)-cortexCenter[0])*((double)cortexI.get(i)-cortexCenter[0])
+				+((double)cortexJ.get(i)-cortexCenter[1])*((double)cortexJ.get(i)-cortexCenter[1])) > maxRadiusY){
+				maxRadiusY = Math.sqrt(((double)cortexI.get(i)-cortexCenter[0])*((double)cortexI.get(i)-cortexCenter[0])
+				+((double)cortexJ.get(i)-cortexCenter[1])*((double)cortexJ.get(i)-cortexCenter[1]));
+			}
+		}
+		
+		
+		
 		maxRadius = range(0, peeledSize).filter(i -> peeledROI[i] >= threshold)
 			.mapToDouble(index -> {
-				final int j = (int) Math.floor(index / width);
-				final int i = index - width * j;
-				final double x = ((double) i) - marrowCenter[0];
-				final double y = ((double) j) - marrowCenter[1];
+				//final int j = (int) Math.floor(index / width);
+				int i = index % width;
+				int j = (int) ((index-i) / width);
+				double x = ((double) i) - marrowCenter[0];
+				double y = ((double) j) - marrowCenter[1];
 				//IJ.log("X "+x+" Y "+y+" mx "+x+" my "+y+" rad "+Math.sqrt(x * x + y * y));
 				return Math.sqrt(x * x + y * y);
 			}).max().orElse(0.0);
-		//IJ.log("Max Radius "+maxRadius);
+			
+			
+		IJ.log("Max Radius "+maxRadius+" Old verion "+maxRadiusY);
+		maxRadius  = maxRadiusY;
 		calculateRadii(preventPeeling);
 		rotateResults();
 	}
@@ -179,7 +220,7 @@ public class DistributionAnalysis {
 		// coordinates
 		for (int et = 0; et < 360; ++et) {
 			final Vector<Double> BMD_temp = new Vector<>();
-			theta[et] = Math.PI / 180.0 * et;
+			theta[et] = Math.PI / 180.0 *((double) et);
 			if (et > 0) {
 				r[et] = rS[et - 1] / 2.0;
 			}
@@ -340,13 +381,28 @@ public class DistributionAnalysis {
 		// Calculate the division and sector values of vBMD
 		for (int pp = 0; pp < size; ++pp) {
 			for (int dd = 0; dd < (int) sectorWidth; ++dd) {
+				
+				
+				
 				int index = pInd.get((int) (pp * sectorWidth + dd));
+				
+					
+				
+				
+				
 				endocorticalRadii[pp] += eRad[index] / sectorWidth;
 				pericorticalRadii[pp] += pRad[index] / sectorWidth;
+				
+				
 				// Cortex
 				endoCorticalBMDs[pp] += bMDJ.get(0)[index] / sectorWidth;
 				midCorticalBMDs[pp] += bMDJ.get(1)[index] / sectorWidth;
 				periCorticalBMDs[pp] += bMDJ.get(2)[index] / sectorWidth;
+				
+				IJ.log("NEW pp "+pp+" sector dd "+dd+" pind "+index +" eRad "+endocorticalRadii[pp]+" pRad "+ pericorticalRadii[pp]
+				+" eBMD "+ endoCorticalBMDs[pp]
+				+" mBMD "+ midCorticalBMDs[pp]
+				+" pBMD "+ periCorticalBMDs[pp]);
 				//IJ.log("pp "+pp+" index "+index);
 			}
 			corticalDensity[0][pp] = endoCorticalBMDs[pp];
