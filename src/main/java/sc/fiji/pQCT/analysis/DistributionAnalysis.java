@@ -220,24 +220,40 @@ public class DistributionAnalysis {
 		}
 		// Finding endocortical and pericortical borders uMath.sing polar
 		// coordinates
+		final double x = marrowCenter[0];
+		final double y = marrowCenter[1];
+		
 		for (int et = 0; et < 360; ++et) {
 			final Vector<Double> BMD_temp = new Vector<>();
 			theta[et] = Math.PI / 180.0 *((double) et);
+			
 			if (et > 0) {
-				r[et] = rS[et - 1] / 2.0;
+				r[et] = Math.round((rS[et - 1] / 2.0)*10d)/10d;
 			}
-
+			
 			// Anatomical endosteal border
-			final double sinTheta = Math.sin(theta[et]);
-			final double cosTheta = Math.cos(theta[et]);
-			final double x = marrowCenter[0];
-			final double y = marrowCenter[1];
-			r[et] = expandRadius(originalROI, threshold, r[et], x, y, cosTheta,
-				sinTheta);
+			double sinTheta = Math.sin(theta[et]);
+			double cosTheta = Math.cos(theta[et]);
+			
+			/*
+			while (originalROI[(int) (x+r[et]*cosTheta)+ ((int) ((y+r[et]*sinTheta))*width)] < threshold 
+					& r[et] < maxRadius){
+				r[et] = r[et] + 0.1;
+			}
+			*/
+			
+			r[et] = expandRadius(originalROI, threshold, r[et], x, y, cosTheta,sinTheta);
 			rS[et] = r[et];
 			if (preventPeeling){
 				r2[et] = r[et];
 			}else{
+				/*
+				while (peeledROI[(int) (x+r[et]*cosTheta)+ ((int) ((y+r[et]*sinTheta))*width)] < 1 
+					& r[et] < maxRadius){
+					r[et] = r[et] + 0.1;
+				}
+				*/
+				
 				r[et] = expandRadius(peeledROI, 1.0, r[et], x, y, cosTheta, sinTheta);
 				r2[et] = r[et];
 			}
