@@ -43,6 +43,8 @@ import sc.fiji.pQCT.selectroi.DetectedEdge;
 import sc.fiji.pQCT.selectroi.RoiSelector;
 import sc.fiji.pQCT.selectroi.SelectROI;
 
+//import ij.IJ;	//Debugging
+
 public class DetermineAlpha {
 
 	private final ImageAndAnalysisDetails details;
@@ -183,9 +185,16 @@ public class DetermineAlpha {
 		// Calculate CSMIs and rotation angle to align maximal and minimal bending
 		// axes with X and Y axes
 		pind = rotateIndex(rotationIndex);
-
-		pindColor = details.flipDistribution ? rotateIndex(rotationIndex)
-			: rotateIndex(-rotationIndex);
+		
+		//pindColor = details.flipDistribution ? rotateIndex(rotationIndex): rotateIndex(-rotationIndex);
+		if(details.flipDistribution){
+			//IJ.log("Flip pindColor");
+			pindColor = rotateIndex((int) (rotationIndex));
+		}else{
+			//IJ.log("Do not flip pindColor");
+			pindColor = rotateIndex(-rotationIndex);
+		}
+		
 	}
 
 	private static double[] calculateCenter(final byte[] sieve, final int width,
@@ -276,7 +285,7 @@ public class DetermineAlpha {
 		}
 	}
 	
-	
+	/*
 	private Vector<Integer> rotateIndex(final int rotationAngle) {
 		final int initialIndex = 360 - Math.abs(rotationAngle);
 		final Vector<Integer> rotateIndexVector = Stream.iterate(initialIndex,
@@ -287,8 +296,7 @@ public class DetermineAlpha {
 		}
 		return rotateIndexVector;
 	}
-	
-	/*
+	*/
 	Vector<Integer> rotateIndex(int rotationAngle){
 		int initialIndex = 0;
 		Vector<Integer> rotateIndexVector = new Vector<Integer>();
@@ -309,11 +317,11 @@ public class DetermineAlpha {
 			++inde;
 		}
 		
-		//Flip rotateIndexVector, for e.g. comparing left to right
+		/*Flip rotateIndexVector, for e.g. comparing left to right*/
 		if (details.flipDistribution){
 			Collections.reverse(rotateIndexVector);
 		}
 		return rotateIndexVector;
 	}
-	*/
+	
 }

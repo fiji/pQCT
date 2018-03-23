@@ -38,6 +38,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.DoubleStream;
 
 import ij.IJ;
+import java.util.Locale;	///Debugging
 import ij.ImagePlus;
 import ij.Prefs;
 import ij.WindowManager;
@@ -502,6 +503,7 @@ public class PqctAnalysis implements PlugIn {
 			tempImage.getProcessor().setColor(new Color(0, (int) (255.0 * colorScale),
 				(int) (255.0 * (1.0 - colorScale))));
 			tempImage.getProcessor().drawPixel(x, y);
+			//IJ.log(String.format(Locale.ROOT,"I %d x %d y %d pIndColor %d",i,x,y,pindColor.get(i)));
 		}
 		return tempImage;
 	}
