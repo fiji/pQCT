@@ -195,6 +195,7 @@ public class DistributionAnalysis {
 				return Math.sqrt(x * x + y * y);
 			}).max().orElse(0.0);
 			
+		maxRadius = Math.round(maxRadius*10d)/10d;	//Needs to be rounded to 0.1
 			
 		IJ.log("Max Radius "+maxRadius+" max radiusY "+maxRadiusY);
 		//maxRadius  = maxRadiusY;
@@ -235,25 +236,11 @@ public class DistributionAnalysis {
 			double sinTheta = Math.sin(theta[et]);
 			double cosTheta = Math.cos(theta[et]);
 			
-			/*
-			while (originalROI[(int) (x+r[et]*cosTheta)+ ((int) ((y+r[et]*sinTheta))*width)] < threshold 
-					& r[et] < maxRadius){
-				r[et] = r[et] + 0.1;
-			}
-			*/
-			
 			r[et] = expandRadius(originalROI, threshold, r[et], x, y, cosTheta,sinTheta);
 			rS[et] = r[et];
 			if (preventPeeling){
 				r2[et] = r[et];
 			}else{
-				/*
-				while (peeledROI[(int) (x+r[et]*cosTheta)+ ((int) ((y+r[et]*sinTheta))*width)] < 1 
-					& r[et] < maxRadius){
-					r[et] = r[et] + 0.1;
-				}
-				*/
-				
 				r[et] = expandRadius(peeledROI, 1.0, r[et], x, y, cosTheta, sinTheta);
 				r2[et] = r[et];
 			}
@@ -261,14 +248,15 @@ public class DistributionAnalysis {
 
 			//Return from rMax to identify periosteal border
 			double rTemp = maxRadius;
-			if (preventPeeling){
-				while (	rTemp > r2[et] && originalROI[(int) (x+rTemp*cosTheta)+ (((int) (y+rTemp*sinTheta))*width)] <= 0){
-					rTemp -= 0.1;				
+			double[] roiToObserve = preventPeeling ? originalROI : peeledROI;
+
+			while (	rTemp > r2[et]){
+				int index = (int) (x+rTemp*cosTheta)+ (((int) (y+rTemp*sinTheta))*width);
+				if (roiToObserve[index]>0){
+					rTemp+= 0.1;	//The loop went until no longer on bone
+					break;
 				}
-			}else{
-				while (	rTemp > r2[et] && peeledROI[(int) (x+rTemp*cosTheta)+ (((int) (y+rTemp*sinTheta))*width)] <= 0){
-					rTemp -= 0.1;				
-				}
+				rTemp -= 0.1;				
 			}
 			
 			//Identify anatomical periosteal border			
