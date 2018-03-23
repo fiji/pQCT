@@ -171,6 +171,8 @@ public class DistributionAnalysis {
 		}
 		cortexCenter[0] /=(double)cortexI.size();
 		cortexCenter[1] /=(double)cortexJ.size();
+		
+		IJ.log("Cortex Centre X "+cortexCenter[0]+" Y "+cortexCenter[1]);
 		maxRadiusY = 0; //y for cortical pixels. used for BSI calculations, i.e. density weighted section modulus
 		for (int i = 0; i< cortexI.size();i++){
 			if (Math.sqrt(((double)cortexI.get(i)-cortexCenter[0])*((double)cortexI.get(i)-cortexCenter[0])
@@ -182,7 +184,7 @@ public class DistributionAnalysis {
 		
 		
 		
-		maxRadius = range(0, peeledSize).filter(i -> peeledROI[i] >= threshold)
+		maxRadius = range(0, peeledSize).filter(i -> originalROI[i] >= threshold)
 			.mapToDouble(index -> {
 				//final int j = (int) Math.floor(index / width);
 				int i = index % width;
@@ -194,8 +196,8 @@ public class DistributionAnalysis {
 			}).max().orElse(0.0);
 			
 			
-		IJ.log("Max Radius "+maxRadius+" Old verion "+maxRadiusY);
-		maxRadius  = maxRadiusY;
+		IJ.log("Max Radius "+maxRadius+" max radiusY "+maxRadiusY);
+		//maxRadius  = maxRadiusY;
 		calculateRadii(preventPeeling);
 		rotateResults();
 	}
@@ -276,7 +278,7 @@ public class DistributionAnalysis {
 			}
 			
 			//Get the BMDs here
-
+			IJ.log(String.format("theta %d %.2f endo %.2f peri %.2f",et,theta[et],r2[et],r[et]));
 			// Dividing the cortex to three divisions -> save the mean vBMD for each
 			// division
 			final double analysisThickness = BMD_temp.size();
@@ -399,10 +401,12 @@ public class DistributionAnalysis {
 				midCorticalBMDs[pp] += bMDJ.get(1)[index] / sectorWidth;
 				periCorticalBMDs[pp] += bMDJ.get(2)[index] / sectorWidth;
 				
+				/*
 				IJ.log("NEW pp "+pp+" sector dd "+dd+" pind "+index +" eRad "+endocorticalRadii[pp]+" pRad "+ pericorticalRadii[pp]
 				+" eBMD "+ endoCorticalBMDs[pp]
 				+" mBMD "+ midCorticalBMDs[pp]
 				+" pBMD "+ periCorticalBMDs[pp]);
+				*/
 				//IJ.log("pp "+pp+" index "+index);
 			}
 			corticalDensity[0][pp] = endoCorticalBMDs[pp];
