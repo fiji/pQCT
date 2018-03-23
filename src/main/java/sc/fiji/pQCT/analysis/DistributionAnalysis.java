@@ -42,6 +42,7 @@ import sc.fiji.pQCT.selectroi.SelectROI;
 import ij.IJ;
 import ij.ImagePlus;					//Image creation
 import ij.process.FloatProcessor;		//Float Images
+import java.util.Locale;
 
 public class DistributionAnalysis {
 
@@ -126,7 +127,7 @@ public class DistributionAnalysis {
 		}
 		marrowCenter[0] /= (double) marrowI.size();
 		marrowCenter[1] /= (double) marrowJ.size();
-		IJ.log("C0 "+marrowCenter[0]+" C1 "+marrowCenter[1]);
+		//IJ.log("C0 "+marrowCenter[0]+" C1 "+marrowCenter[1]);
 		
 		peeledBMD = range(0, peeledSize).filter(i -> peeledROI[i] >= threshold).mapToDouble(ii -> {return peeledROI[ii];}).average().orElse(0.0);
 
@@ -172,7 +173,7 @@ public class DistributionAnalysis {
 		cortexCenter[0] /=(double)cortexI.size();
 		cortexCenter[1] /=(double)cortexJ.size();
 		
-		IJ.log("Cortex Centre X "+cortexCenter[0]+" Y "+cortexCenter[1]);
+		//IJ.log("Cortex Centre X "+cortexCenter[0]+" Y "+cortexCenter[1]);
 		maxRadiusY = 0; //y for cortical pixels. used for BSI calculations, i.e. density weighted section modulus
 		for (int i = 0; i< cortexI.size();i++){
 			if (Math.sqrt(((double)cortexI.get(i)-cortexCenter[0])*((double)cortexI.get(i)-cortexCenter[0])
@@ -197,7 +198,7 @@ public class DistributionAnalysis {
 			
 		maxRadius = Math.round(maxRadius*10d)/10d;	//Needs to be rounded to 0.1
 			
-		IJ.log("Max Radius "+maxRadius+" max radiusY "+maxRadiusY);
+		//IJ.log("Max Radius "+maxRadius+" max radiusY "+maxRadiusY);
 		//maxRadius  = maxRadiusY;
 		calculateRadii(preventPeeling);
 		rotateResults();
@@ -243,8 +244,9 @@ public class DistributionAnalysis {
 			}else{
 				r[et] = expandRadius(peeledROI, 1.0, r[et], x, y, cosTheta, sinTheta);
 				r2[et] = r[et];
+				r[et] = r[et] + 0.1;
 			}
-			r[et] = r[et] + 0.1;
+			
 
 			//Return from rMax to identify periosteal border
 			double rTemp = maxRadius;
@@ -270,19 +272,13 @@ public class DistributionAnalysis {
 			while (r[et]<rTemp){
 				r[et] = r[et] + 0.1;
 				int index = (int) (x+r[et]*cosTheta)+ (((int) (y+r[et]*sinTheta))*width);
-				if (preventPeeling){
-					if (originalROI[index] > 0){
-						BMD_temp.add(originalROI[index]);
-					}
-				}else{
-					if (peeledROI[index] > 0){
-						BMD_temp.add(originalROI[index]);
-					}
+				if (roiToObserve[index] > 0){
+					BMD_temp.add(originalROI[index]);
 				}
 			}
 			
 			//Get the BMDs here
-			IJ.log(String.format("theta %d %.2f endo %.2f peri %.2f",et,theta[et],r2[et],r[et]));
+			
 			// Dividing the cortex to three divisions -> save the mean vBMD for each
 			// division
 			final double analysisThickness = BMD_temp.size();
@@ -299,6 +295,7 @@ public class DistributionAnalysis {
 				bMDJ.get(div)[et] /= (double) mo;
 				
 			}
+			IJ.log(String.format(Locale.ROOT,"theta %d %.2f endo %.2f peri %.2f eBMD %.2f mBMD %.2f pBMD %.2f",et,theta[et],r2[et],r[et],bMDJ.get(0)[et],bMDJ.get(1)[et],bMDJ.get(2)[et]));
 		}
 	}
 
