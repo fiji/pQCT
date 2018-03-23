@@ -83,7 +83,7 @@ public class DistributionAnalysis {
 		//}
 		
 		sectorWidth = details.sectorWidth;
-		final int size = (int) (360 / sectorWidth);
+		final int size = (int) (360d / sectorWidth);
 		endocorticalRadii = new double[size];
 		pericorticalRadii = new double[size];
 		endoCorticalBMDs = new double[size];
@@ -295,7 +295,7 @@ public class DistributionAnalysis {
 				bMDJ.get(div)[et] /= (double) mo;
 				
 			}
-			IJ.log(String.format(Locale.ROOT,"theta %d %.2f endo %.2f peri %.2f eBMD %.2f mBMD %.2f pBMD %.2f",et,theta[et],r2[et],r[et],bMDJ.get(0)[et],bMDJ.get(1)[et],bMDJ.get(2)[et]));
+			//IJ.log(String.format(Locale.ROOT,"theta %d %.2f endo %.2f peri %.2f eBMD %.2f mBMD %.2f pBMD %.2f",et,theta[et],r2[et],r[et],bMDJ.get(0)[et],bMDJ.get(1)[et],bMDJ.get(2)[et]));
 		}
 	}
 
@@ -379,7 +379,7 @@ public class DistributionAnalysis {
 		final double[] eRad =  (double []) stream(rS).map(r -> {return r *= pixelSpacing;}).toArray();
 		final double[] pPRad = (double []) stream(r).map(r -> {return r *= pixelSpacing;}).toArray();
 		final double[] pERad = (double []) stream(r2).map(r -> {return r *= pixelSpacing;}).toArray();
-		final int size = (int) (360 / sectorWidth);
+		final int size = (int) (360d / sectorWidth);
 		final double[][] corticalDensity = new double[(int) divisions][size];
 		// Calculate the division and sector values of vBMD
 		for (int pp = 0; pp < size; ++pp) {
@@ -414,7 +414,7 @@ public class DistributionAnalysis {
 			corticalDensity[1][pp] = midCorticalBMDs[pp];
 			corticalDensity[2][pp] = periCorticalBMDs[pp];
 			
-			//IJ.log("corticalDensity pp "+pp+" endo "+corticalDensity[0][pp]+" mid "+corticalDensity[1][pp]+" peri "+corticalDensity[2][pp]);
+			//IJ.log("Pind "+pInd.get(pp)+" corticalDensity pp "+pp+" endo "+corticalDensity[0][pp]+" mid "+corticalDensity[1][pp]+" peri "+corticalDensity[2][pp]);
 			
 		}
 
