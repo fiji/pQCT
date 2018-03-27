@@ -57,21 +57,19 @@ public class ResultsWriter {
 			details.softThreshold, details.rotationThreshold, details.areaThreshold,
 			details.bMDThreshold, details.scalingFactor, details.constant).map(
 				Object::toString).toArray(String[]::new);
-		
+
 		final StringBuilder resultsBuilder = new StringBuilder(results);
 		if (imp != null) {
-			if (PqctAnalysis.getInfoProperty(imageInfo,
-				"File Name") != null)
-			{
-				resultsBuilder.append(PqctAnalysis.getInfoProperty(
-					imageInfo, "File Path"));
-				resultsBuilder.append(PqctAnalysis.getInfoProperty(
-					imageInfo, "File Name")).append("\t");
+			if (PqctAnalysis.getInfoProperty(imageInfo, "File Name") != null) {
+				resultsBuilder.append(PqctAnalysis.getInfoProperty(imageInfo,
+					"File Path"));
+				resultsBuilder.append(PqctAnalysis.getInfoProperty(imageInfo,
+					"File Name")).append("\t");
 			}
 			else {
 				if (imp.getImageStackSize() == 1) {
-					resultsBuilder.append(PqctAnalysis.getInfoProperty(
-						imageInfo, "Title")).append("\t");
+					resultsBuilder.append(PqctAnalysis.getInfoProperty(imageInfo,
+						"Title")).append("\t");
 				}
 				else {
 					resultsBuilder.append(imageInfo.substring(0, imageInfo.indexOf("\n")))
@@ -79,8 +77,8 @@ public class ResultsWriter {
 				}
 			}
 			for (int i = 1; i < propertyNames.length; ++i) {
-				resultsBuilder.append(PqctAnalysis.getInfoProperty(
-					imageInfo, propertyNames[i])).append("\t");
+				resultsBuilder.append(PqctAnalysis.getInfoProperty(imageInfo,
+					propertyNames[i])).append("\t");
 			}
 		}
 
@@ -171,21 +169,21 @@ public class ResultsWriter {
 			}
 
 			final int iterations = (360 / details.sectorWidth);
-			//Add polar results headings first
+			// Add polar results headings first
 			for (int i = 0; i < iterations; ++i) {
 				headings.append("\t").append("Polar sector ").append(i).append(
 					" vBMD [mg/cm3]");
 			}
-			
-			
-			final String[] varNames = {" endocortical radius [mm]"," pericortical radius [mm]"," endocortical vBMD [mg/cm3]"," midcortical vBMD [mg/cm3]"," pericortical vBMD [mg/cm3]"};
-			
-			
-			//add variables with similar naming convention in two loops
+
+			final String[] varNames = { " endocortical radius [mm]",
+				" pericortical radius [mm]", " endocortical vBMD [mg/cm3]",
+				" midcortical vBMD [mg/cm3]", " pericortical vBMD [mg/cm3]" };
+
+			// add variables with similar naming convention in two loops
 			for (final String varName : varNames) {
 				for (int i = 0; i < iterations; ++i) {
 					final String rowStart = (i * details.sectorWidth) + " - " + ((i + 1) *
-							details.sectorWidth);
+						details.sectorWidth);
 					headings.append("\t").append(rowStart).append(varName);
 				}
 			}

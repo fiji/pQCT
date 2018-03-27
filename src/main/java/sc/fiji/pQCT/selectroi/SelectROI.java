@@ -95,7 +95,9 @@ public class SelectROI extends RoiSelector {
 			}
 			// Flip the original image prior to adding the ROI, if scaled image is
 			// flipped
-			if ((details.flipHorizontal || details.flipVertical) && imp.getRoi() != null){
+			if ((details.flipHorizontal || details.flipVertical) && imp
+				.getRoi() != null)
+			{
 				// Remove existing ROIs in order to flip the whole image...
 				IJ.run(imp, "Select None", "");
 			}
@@ -115,19 +117,20 @@ public class SelectROI extends RoiSelector {
 		for (int j = 0; j < height; j++) {
 			for (int i = 0; i < width; i++) {
 				final int index = i + j * width;
-				if (scaledImage[index]<areaThreshold & sieve[index] > 0){
+				if (scaledImage[index] < areaThreshold & sieve[index] > 0) {
 					boneMarrowRoiI.add(i);
 					boneMarrowRoiJ.add(j);
 				}
-				if (scaledImage[index]>=areaThreshold & sieve[index] > 0){
+				if (scaledImage[index] >= areaThreshold & sieve[index] > 0) {
 					cortexAreaRoiI.add(i);
 					cortexAreaRoiJ.add(j);
 				}
-				if (scaledImage[index]>=BMDthreshold & sieve[index] > 0){
-					cortexROI[index] = scaledImage[index];				
+				if (scaledImage[index] >= BMDthreshold & sieve[index] > 0) {
+					cortexROI[index] = scaledImage[index];
 					cortexRoiI.add(i);
 					cortexRoiJ.add(j);
-				} else {
+				}
+				else {
 					cortexROI[index] = minimum;
 				}
 			}

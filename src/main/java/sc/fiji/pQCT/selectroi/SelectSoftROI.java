@@ -40,8 +40,6 @@ import ij.gui.Roi;
 import sc.fiji.pQCT.io.ImageAndAnalysisDetails;
 import sc.fiji.pQCT.io.ScaledImageData;
 
-//Debugging
-
 public class SelectSoftROI extends RoiSelector {
 
 	public byte[] eroded;
@@ -96,7 +94,7 @@ public class SelectSoftROI extends RoiSelector {
 
 			// Erode three layers of pixels from the fat sieve to get rid of higher
 			// density layer (i.e. skin) on top of fat to enable finding muscle border
-			byte[] muscleSieve =softSieve.clone();
+			byte[] muscleSieve = softSieve.clone();
 			final double[] muscleImage = softScaledImage.clone();
 
 			// Remove skin by eroding three layers of pixels
@@ -142,7 +140,7 @@ public class SelectSoftROI extends RoiSelector {
 			// Dilate the sieve to include all muscle pixels
 			byte[] tempMuscleSieve = muscleSieve.clone();
 			tempMuscleSieve = dilate(tempMuscleSieve, (byte) 1, (byte) 0, (byte) 2);
-			
+
 			eroded = new byte[softSieve.length];
 			for (int i = 0; i < tempMuscleSieve.length; ++i) {
 				if (tempMuscleSieve[i] == 1) {
@@ -151,10 +149,10 @@ public class SelectSoftROI extends RoiSelector {
 			}
 
 			// create temp boneResult to wipe out bone and marrow
-			final Vector<Object> masks2 = getSieve(softScaledImage, softThreshold, details.roiChoiceSt,
-					details.guessStacked, details.stacked, false, false);
+			final Vector<Object> masks2 = getSieve(softScaledImage, softThreshold,
+				details.roiChoiceSt, details.guessStacked, details.stacked, false,
+				false);
 			final byte[] boneResult = (byte[]) masks2.get(1);
-			
 
 			for (int i = 0; i < softSieve.length; ++i) {
 				if (softSieve[i] == 1 && softScaledImage[i] >= airThreshold &&

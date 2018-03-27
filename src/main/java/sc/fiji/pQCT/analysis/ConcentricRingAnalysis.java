@@ -38,7 +38,6 @@ import sc.fiji.pQCT.selectroi.SelectROI;
 
 public class ConcentricRingAnalysis {
 
-	private final double pixelSpacing;
 	public final int height;
 	public final int width;
 	public final double[] boneCenter;
@@ -47,6 +46,7 @@ public class ConcentricRingAnalysis {
 	public final double[] rU = new double[360];
 	public final double[] pericorticalRadii;
 	public final Vector<double[]> BMDs = new Vector<>();
+	private final double pixelSpacing;
 	private final double sectorWidth;
 	private final double divisions;
 	// Variables for moment calculations
@@ -82,7 +82,7 @@ public class ConcentricRingAnalysis {
 		pericorticalRadii = new double[size];
 		calculateRadii();
 		rotateResults();
-		
+
 	}
 
 	private void calculateRadii() {
@@ -165,6 +165,6 @@ public class ConcentricRingAnalysis {
 				}
 			}
 		}
-		
+
 	}
 }

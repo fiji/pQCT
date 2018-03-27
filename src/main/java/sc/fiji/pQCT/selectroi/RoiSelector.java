@@ -110,7 +110,8 @@ public abstract class RoiSelector {
 		final double[] scaledImage, final double threshold)
 	{
 
-		final int[][] fourconnectedNHood = {{-1,0},{1,0},{0,-1},{0,1}};
+		final int[][] fourconnectedNHood = { { -1, 0 }, { 1, 0 }, { 0, -1 }, { 0,
+			1 } };
 
 		// Fill the area enclosed by the traced edge contained in roiI,roiJ
 		// beginning needs to be within the traced edge
@@ -154,7 +155,9 @@ public abstract class RoiSelector {
 				}
 				// Check 4-connected neighbours
 				for (final int[] aFourconnectedNHood : fourconnectedNHood) {
-					if (sieveTemp2[x + aFourconnectedNHood[0] + (y + aFourconnectedNHood[1]) * width] == 0) {
+					if (sieveTemp2[x + aFourconnectedNHood[0] + (y +
+						aFourconnectedNHood[1]) * width] == 0)
+					{
 						initialX.add(x + aFourconnectedNHood[0]);
 						initialY.add(y + aFourconnectedNHood[1]);
 					}
@@ -241,8 +244,7 @@ public abstract class RoiSelector {
 			bones.get(i)[1] /= bones.get(i)[2];
 			// Square root omitted, as it does not affect the order...
 			distanceFromCentreOfLimb[i] = Math.pow(limbCenterX - bones.get(i)[0],
-				2.0) + Math.pow(limbCenterY - bones.get(i)[1],
-					2.0);
+				2.0) + Math.pow(limbCenterY - bones.get(i)[1], 2.0);
 		}
 		return distanceFromCentreOfLimb;
 	}
@@ -261,17 +263,13 @@ public abstract class RoiSelector {
 		int replacementJ = fatRoiJ.get(cleavingIndices[0]);
 		// the elements to be cleaved
 		final List<Integer> cleavedI = new Vector<>(fatRoiI.subList(
-			cleavingIndices[0] + 1, cleavingIndices[1] +
-				1));
+			cleavingIndices[0] + 1, cleavingIndices[1] + 1));
 		final List<Integer> cleavedJ = new Vector<>(fatRoiJ.subList(
-			cleavingIndices[0] + 1, cleavingIndices[1] +
-				1));
+			cleavingIndices[0] + 1, cleavingIndices[1] + 1));
 		for (int i = cleavingIndices[0]; i < cleavingIndices[1]; ++i) {
 			// Remove the elements to be cleaved
-			fatRoiI.removeElementAt(
-				cleavingIndices[0]);
-			fatRoiJ.removeElementAt(
-				cleavingIndices[0]);
+			fatRoiI.removeElementAt(cleavingIndices[0]);
+			fatRoiJ.removeElementAt(cleavingIndices[0]);
 		}
 		// Insert replacement line
 		final double replacementLength = cleavingIndices[1] - cleavingIndices[0];
@@ -365,39 +363,6 @@ public abstract class RoiSelector {
 			returnVectorVectorPointer.insertElementAt(returnVectorPair, 0);
 		}
 		return returnVectorVectorPointer;
-	}
-
-	byte[] dilate(final byte[] data, final byte dilateVal, final byte min,
-				  final byte temp)
-	{
-		// Dilate algorithm
-		// Best dilate by one solution taken from
-		// http://ostermiller.org/dilate_and_erode.html
-		for (int i = 0; i < height; i++) {
-			for (int j = 0; j < width; j++) {
-				if (data[i * width + j] == dilateVal) {
-					if (i > 0 && data[(i - 1) * width + j] == min) {
-						data[(i - 1) * width + j] = temp;
-					}
-					if (j > 0 && data[(i) * width + j - 1] == min) {
-						data[i * width + j - 1] = temp;
-					}
-					if (i + 1 < height && data[(i + 1) * width + j] == min) {
-						data[(i + 1) * width + j] = temp;
-					}
-					if (j + 1 < width && data[i * width + j + 1] == min) {
-						data[i * width + j + 1] = temp;
-					}
-				}
-			}
-		}
-		for (int i = 0; i < data.length; i++) {
-			if (data[i] == temp) {
-				// Set to proper value here...
-				data[i] = dilateVal;
-			}
-		}
-		return data;
 	}
 
 	private int dilateLimb(final byte[] data, final byte dilateVal,
@@ -901,7 +866,8 @@ public abstract class RoiSelector {
 		while (true) {
 			int counter = 0;
 			previousDirection = direction;
-			// Handle going out of bounds by considering out of bounds to be  less than threshold
+			// Handle going out of bounds by considering out of bounds to be less than
+			// threshold
 			if ((i + ((int) Math.round(Math.cos(direction)))) >= 0 && (i + ((int) Math
 				.round(Math.cos(direction))) < width) && (j + ((int) Math.round(Math
 					.sin(direction))) >= 0) && (j + ((int) Math.round(Math.sin(
@@ -1003,6 +969,39 @@ public abstract class RoiSelector {
 		return twoLongest;
 	}
 
+	byte[] dilate(final byte[] data, final byte dilateVal, final byte min,
+		final byte temp)
+	{
+		// Dilate algorithm
+		// Best dilate by one solution taken from
+		// http://ostermiller.org/dilate_and_erode.html
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				if (data[i * width + j] == dilateVal) {
+					if (i > 0 && data[(i - 1) * width + j] == min) {
+						data[(i - 1) * width + j] = temp;
+					}
+					if (j > 0 && data[(i) * width + j - 1] == min) {
+						data[i * width + j - 1] = temp;
+					}
+					if (i + 1 < height && data[(i + 1) * width + j] == min) {
+						data[(i + 1) * width + j] = temp;
+					}
+					if (j + 1 < width && data[i * width + j + 1] == min) {
+						data[i * width + j + 1] = temp;
+					}
+				}
+			}
+		}
+		for (int i = 0; i < data.length; i++) {
+			if (data[i] == temp) {
+				// Set to proper value here...
+				data[i] = dilateVal;
+			}
+		}
+		return data;
+	}
+
 	/*A function to get rid of the measurement tube used at UKK-institute
 	with Stratex XCT3000 device. Needed for soft tissue analysis*/
 	byte[] removeSleeve(final double[] scaledImage,
@@ -1074,14 +1073,11 @@ public abstract class RoiSelector {
 		// Erode algorithm
 		// Modified from the best dilate by one solution taken from
 		// http://ostermiller.org/dilate_and_erode.html
-		for (int i = 1; i < height-1; i++) {
-			for (int j = 1; j < width-1; j++) {
+		for (int i = 1; i < height - 1; i++) {
+			for (int j = 1; j < width - 1; j++) {
 				if (data[i * width + j] > 0) {
-					if (	data[(i - 1)	* width + j] == 0
-						| 	data[(i) 		* width + j - 1] == 0
-						| 	data[(i + 1)	* width +j] == 0
-						| 	data[(i)		* width + j + 1] == 0
-						)
+					if (data[(i - 1) * width + j] == 0 | data[(i) * width + j - 1] == 0 |
+						data[(i + 1) * width + j] == 0 | data[(i) * width + j + 1] == 0)
 					{
 						data[i * width + j] = -1;
 					} // Erode the pixel if any of the neighborhood pixels is background

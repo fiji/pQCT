@@ -75,7 +75,8 @@ public class MassDistribution {
 		// Calculate radii in polar coordinate system originating from bone marrow
 		// center of mass
 		final double rIncrement = 0.1;
-		// Finding endocortical and pericortical borders uMath.sing polar coordinates
+		// Finding endocortical and pericortical borders uMath.sing polar
+		// coordinates
 		for (int et = 0; et < 360; et++) {
 			final double theta = Math.PI / 180.0 * et;
 			bMC[et] = 0;

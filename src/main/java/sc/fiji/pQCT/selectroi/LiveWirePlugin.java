@@ -222,8 +222,7 @@ public class LiveWirePlugin implements PlugIn, MouseListener,
 					tY[i] = polygon.ypoints[i];
 				}
 				// Store the previous polygon
-				polygons.add(new Polygon(tX, tY,
-					tX.length));
+				polygons.add(new Polygon(tX, tY, tX.length));
 				// If shift is pressed, add a straight line
 				if ((e.getModifiersEx() & InputEvent.SHIFT_MASK) != 0 || (e
 					.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0)

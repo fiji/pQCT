@@ -32,7 +32,7 @@ package sc.fiji.pQCT.selectroi.liveWireEngine;
 class Vector2d {
 
 	private double x;
-    private double y;
+	private double y;
 
 	private Vector2d() {
 		x = 0.0;
@@ -44,24 +44,24 @@ class Vector2d {
 		this.y = y;
 	}
 
-    private void setX(final double x) {
-		this.x = x;
-	}
-
-	private void setY(final double y) {
-		this.y = y;
-	}
-
 	private double getX() {
 		return x;
+	}
+
+	private void setX(final double x) {
+		this.x = x;
 	}
 
 	private double getY() {
 		return y;
 	}
 
+	private void setY(final double y) {
+		this.y = y;
+	}
+
 	// returns the modulus of the vector
-    private double mod() {
+	private double mod() {
 		return Math.sqrt(x * x + y * y);
 	}
 

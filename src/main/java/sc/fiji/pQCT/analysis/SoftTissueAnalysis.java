@@ -57,89 +57,91 @@ public class SoftTissueAnalysis {
 
 		double weightedFatArea = 0;
 		double weightedLimbArea = 0;
-		for (int i =0;i<roi.width*roi.height;i++){
-			if (roi.softSieve[i] >0){
-				//Bone & Marrow not excluded!!
-				limbA +=1;
-				limbD +=roi.softScaledImage[i];
-				weightedLimbArea += roi.softScaledImage[i]+1000.0;
+		for (int i = 0; i < roi.width * roi.height; i++) {
+			if (roi.softSieve[i] > 0) {
+				// Bone & Marrow not excluded!!
+				limbA += 1;
+				limbD += roi.softScaledImage[i];
+				weightedLimbArea += roi.softScaledImage[i] + 1000.0;
 			}
-			if (roi.softSieve[i] ==2 || roi.softSieve[i] ==4 || roi.softSieve[i] ==5){ //Fat
-				fatA +=1;
-				fatD +=roi.softScaledImage[i];
-				weightedFatArea += roi.softScaledImage[i]+1000.0;
+			if (roi.softSieve[i] == 2 || roi.softSieve[i] == 4 ||
+				roi.softSieve[i] == 5)
+			{ // Fat
+				fatA += 1;
+				fatD += roi.softScaledImage[i];
+				weightedFatArea += roi.softScaledImage[i] + 1000.0;
 			}
-			if (roi.softSieve[i] ==3){
-				//Muscle no IntraFat
-				muA +=1;
-				muD +=roi.softScaledImage[i];
-				totalMuA	+=1;
-				totalMuD	+=roi.softScaledImage[i];
+			if (roi.softSieve[i] == 3) {
+				// Muscle no IntraFat
+				muA += 1;
+				muD += roi.softScaledImage[i];
+				totalMuA += 1;
+				totalMuD += roi.softScaledImage[i];
 			}
-			if (roi.softSieve[i] ==4){
-				//IntraFat
-				intraMuFatA	+=1;
-				intraMuFatD	+=roi.softScaledImage[i];
-				totalMuA	+=1;
-				totalMuD	+=roi.softScaledImage[i];
+			if (roi.softSieve[i] == 4) {
+				// IntraFat
+				intraMuFatA += 1;
+				intraMuFatD += roi.softScaledImage[i];
+				totalMuA += 1;
+				totalMuD += roi.softScaledImage[i];
 			}
-			if (roi.softSieve[i] ==5){
-				//subCutFat
-				subCutFatA	+=1;
-				subCutFatD	+=roi.softScaledImage[i];
+			if (roi.softSieve[i] == 5) {
+				// subCutFat
+				subCutFatA += 1;
+				subCutFatD += roi.softScaledImage[i];
 			}
-			if (roi.softSieve[i] ==6){
-				//Bone area
-				boneA	+=1;
-				boneD	+=roi.softScaledImage[i];
+			if (roi.softSieve[i] == 6) {
+				// Bone area
+				boneA += 1;
+				boneD += roi.softScaledImage[i];
 			}
-			if (roi.softSieve[i] ==7){
-				//MedFat
-				meA	+=1;
-				meD	+=roi.softScaledImage[i];
+			if (roi.softSieve[i] == 7) {
+				// MedFat
+				meA += 1;
+				meD += roi.softScaledImage[i];
 			}
-			if (roi.eroded[i] ==1){
-				//PeeledA
-				peeledA	+=1;
-				peeledD	+=roi.softScaledImage[i];
+			if (roi.eroded[i] == 1) {
+				// PeeledA
+				peeledA += 1;
+				peeledD += roi.softScaledImage[i];
 			}
-			
+
 		}
-		
+
 		final double areaScale = roi.pixelSpacing * roi.pixelSpacing / 100.0;
-		limbD/=limbA;
-		limbA*=areaScale;
-		fatD/=fatA;
-		fatA*=areaScale;
-		
-		meD/=meA;
-		meA*=areaScale;
-		boneD/=boneA;
-		boneA*=areaScale;
-		peeledD/=peeledA;
-		peeledA*=areaScale;
-		
-		//Added SubCutFatDMedian 2016/01/08
+		limbD /= limbA;
+		limbA *= areaScale;
+		fatD /= fatA;
+		fatA *= areaScale;
+
+		meD /= meA;
+		meA *= areaScale;
+		boneD /= boneA;
+		boneA *= areaScale;
+		peeledD /= peeledA;
+		peeledA *= areaScale;
+
+		// Added SubCutFatDMedian 2016/01/08
 		final double[] subCFatPixels = new double[(int) subCutFatA];
-		int cnt =0;
-		for (int i =0;i<roi.width*roi.height;i++){
-			if (roi.softSieve[i] ==5){
-				//subCutFat
-				subCFatPixels[cnt]+=roi.softScaledImage[i];
+		int cnt = 0;
+		for (int i = 0; i < roi.width * roi.height; i++) {
+			if (roi.softSieve[i] == 5) {
+				// subCutFat
+				subCFatPixels[cnt] += roi.softScaledImage[i];
 				++cnt;
 			}
 		}
-		subCutFatDMedian = median(subCFatPixels);		
-		subCutFatD/=subCutFatA;
-		subCutFatA*=areaScale;
-		muD/=muA;
-		muA*=areaScale;
-		totalMuD/=totalMuA;
-		totalMuA*=areaScale;
-		intraMuFatD/=intraMuFatA;
-		intraMuFatA*=areaScale;
-		fatPercentage = (weightedFatArea/weightedLimbArea)*100.0;
-		
+		subCutFatDMedian = median(subCFatPixels);
+		subCutFatD /= subCutFatA;
+		subCutFatA *= areaScale;
+		muD /= muA;
+		muA *= areaScale;
+		totalMuD /= totalMuA;
+		totalMuA *= areaScale;
+		intraMuFatD /= intraMuFatA;
+		intraMuFatA *= areaScale;
+		fatPercentage = (weightedFatArea / weightedLimbArea) * 100.0;
+
 	}
 
 	// TODO Use a pre-existing method
