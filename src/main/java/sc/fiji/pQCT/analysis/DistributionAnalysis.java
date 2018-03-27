@@ -326,8 +326,6 @@ public class DistributionAnalysis {
 		// corresponding radii after peeling one layer of pixels
 		final double[] pRad = stream(rU).map(r -> {return r *= pixelSpacing;}).toArray();
 		final double[] eRad = stream(rS).map(r -> {return r *= pixelSpacing;}).toArray();
-		final double[] pPRad = stream(r).map(r -> {return r *= pixelSpacing;}).toArray();
-		final double[] pERad = stream(r2).map(r -> {return r *= pixelSpacing;}).toArray();
 		final int size = (int) (360.0 / sectorWidth);
 		final double[][] corticalDensity = new double[(int) divisions][size];
 		// Calculate the division and sector values of vBMD
