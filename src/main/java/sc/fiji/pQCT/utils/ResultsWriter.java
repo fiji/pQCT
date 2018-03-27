@@ -182,11 +182,11 @@ public class ResultsWriter {
 			
 			
 			//add variables with similar naming convention in two loops
-			for (int v = 0;v<varNames.length;++v){
+			for (final String varName : varNames) {
 				for (int i = 0; i < iterations; ++i) {
 					final String rowStart = (i * details.sectorWidth) + " - " + ((i + 1) *
-						details.sectorWidth);
-					headings.append("\t").append(rowStart).append(varNames[v]);
+							details.sectorWidth);
+					headings.append("\t").append(rowStart).append(varName);
 				}
 			}
 		}

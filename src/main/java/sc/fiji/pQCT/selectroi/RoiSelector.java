@@ -153,10 +153,10 @@ public abstract class RoiSelector {
 					break;
 				}
 				// Check 4-connected neighbours
-				for (int nh = 0; nh<fourconnectedNHood.length;++nh) {
-					if (sieveTemp2[x+fourconnectedNHood[nh][0] + (y+fourconnectedNHood[nh][1])* width] == 0) {
-						initialX.add(x+fourconnectedNHood[nh][0]);
-						initialY.add(y+fourconnectedNHood[nh][1]);
+				for (final int[] aFourconnectedNHood : fourconnectedNHood) {
+					if (sieveTemp2[x + aFourconnectedNHood[0] + (y + aFourconnectedNHood[1]) * width] == 0) {
+						initialX.add(x + aFourconnectedNHood[0]);
+						initialY.add(y + aFourconnectedNHood[1]);
 					}
 
 				}
