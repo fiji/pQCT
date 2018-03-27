@@ -43,8 +43,7 @@ import sc.fiji.pQCT.io.ScaledImageData;
 //Debugging
 
 public class SelectSoftROI extends RoiSelector {
-	
-	private final int RADIAL_DIVISIONS = 720;
+
 	public byte[] eroded;
 
 	// ImageJ constructor
