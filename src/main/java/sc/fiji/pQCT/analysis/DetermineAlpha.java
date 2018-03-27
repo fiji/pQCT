@@ -182,7 +182,7 @@ public class DetermineAlpha {
 		pind = rotateIndex(rotationIndex);
 
 		if (details.flipDistribution) {
-			pindColor = rotateIndex((int) (rotationIndex));
+			pindColor = rotateIndex(rotationIndex);
 		}
 		else {
 			pindColor = rotateIndex(-rotationIndex);
@@ -278,8 +278,8 @@ public class DetermineAlpha {
 	}
 
 	Vector<Integer> rotateIndex(int rotationAngle) {
-		int initialIndex = 0;
-		Vector<Integer> rotateIndexVector = new Vector<Integer>();
+		int initialIndex;
+		Vector<Integer> rotateIndexVector = new Vector<>();
 		if (rotationAngle >= 0) {
 			initialIndex = 360 - rotationAngle;
 		}

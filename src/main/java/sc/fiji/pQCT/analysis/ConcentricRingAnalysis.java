@@ -148,7 +148,7 @@ public class ConcentricRingAnalysis {
 
 	private void rotateResults() {
 		// Calculate pericortical radii
-		final double[] pRad =(double []) stream(rU).map(r -> {return r *= pixelSpacing;}).toArray();
+		final double[] pRad = stream(rU).map(r -> {return r *= pixelSpacing;}).toArray();
 		final int size = (int) (360.0 / sectorWidth);
 		for (int div = 0; div < divisions; ++div) {
 			BMDs.add(new double[size]);
