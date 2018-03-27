@@ -58,7 +58,8 @@ public class SoftTissueAnalysis {
 		double weightedFatArea = 0;
 		double weightedLimbArea = 0;
 		for (int i =0;i<roi.width*roi.height;i++){
-			if (roi.softSieve[i] >0){ //Bone & Marrow not excluded!!
+			if (roi.softSieve[i] >0){
+				//Bone & Marrow not excluded!!
 				limbA +=1;
 				limbD +=roi.softScaledImage[i];
 				weightedLimbArea += roi.softScaledImage[i]+1000.0;
@@ -68,33 +69,37 @@ public class SoftTissueAnalysis {
 				fatD +=roi.softScaledImage[i];
 				weightedFatArea += roi.softScaledImage[i]+1000.0;
 			}
-			if (roi.softSieve[i] ==3){ //Muscle no IntraFat
+			if (roi.softSieve[i] ==3){
+				//Muscle no IntraFat
 				muA +=1;
 				muD +=roi.softScaledImage[i];
 				totalMuA	+=1;
 				totalMuD	+=roi.softScaledImage[i];
 			}
-			if (roi.softSieve[i] ==4){ //IntraFat
+			if (roi.softSieve[i] ==4){
+				//IntraFat
 				intraMuFatA	+=1;
 				intraMuFatD	+=roi.softScaledImage[i];
 				totalMuA	+=1;
 				totalMuD	+=roi.softScaledImage[i];
-				//weightedFatArea += roi.softScaledImage[i]+1000.0;
 			}
-			if (roi.softSieve[i] ==5){ //subCutFat
+			if (roi.softSieve[i] ==5){
+				//subCutFat
 				subCutFatA	+=1;
 				subCutFatD	+=roi.softScaledImage[i];
-				//weightedFatArea += roi.softScaledImage[i]+1000.0;
 			}
-			if (roi.softSieve[i] ==6){ //Bone area
+			if (roi.softSieve[i] ==6){
+				//Bone area
 				boneA	+=1;
 				boneD	+=roi.softScaledImage[i];
 			}
-			if (roi.softSieve[i] ==7){ //MedFat
+			if (roi.softSieve[i] ==7){
+				//MedFat
 				meA	+=1;
 				meD	+=roi.softScaledImage[i];
 			}
-			if (roi.eroded[i] ==1){ //PeeledA
+			if (roi.eroded[i] ==1){
+				//PeeledA
 				peeledA	+=1;
 				peeledD	+=roi.softScaledImage[i];
 			}
@@ -118,7 +123,8 @@ public class SoftTissueAnalysis {
 		double[] subCFatPixels = new double[(int) subCutFatA];
 		int cnt =0;
 		for (int i =0;i<roi.width*roi.height;i++){
-			if (roi.softSieve[i] ==5){ //subCutFat
+			if (roi.softSieve[i] ==5){
+				//subCutFat
 				subCFatPixels[cnt]+=roi.softScaledImage[i];
 				++cnt;
 			}

@@ -48,7 +48,7 @@ public class SelectROI extends RoiSelector {
 		final double boneThreshold, final boolean setRoi) throws ExecutionException
 	{
 		super(dataIn, detailsIn, imp);
-		/*Select ROI and set everything else than the roi to minimum*/
+		// Select ROI and set everything else than the roi to minimum
 		cortexROI = new double[width * height];
 		cortexRoiI = new Vector<>();
 		cortexRoiJ = new Vector<>();
@@ -58,7 +58,6 @@ public class SelectROI extends RoiSelector {
 		boneMarrowRoiJ = new Vector<>();
 		Roi ijROI = imp.getRoi();
 		final double[] tempScaledImage = scaledImage.clone();
-		// scaledImage.clone();
 		if (ijROI != null && details.manualRoi) {
 			// Set pixels outside the manually selected ROI to zero
 			for (int j = 0; j < height; j++) {
@@ -86,7 +85,7 @@ public class SelectROI extends RoiSelector {
 		final Vector<DetectedEdge> boneEdges = (Vector<DetectedEdge>) boneMasks.get(
 			2);
 		selection = (Integer) boneMasks.get(3);
-		/*Add the roi to the image*/
+		// Add the roi to the image
 		if (setRoi) {
 			final int[] xcoordinates = new int[boneEdges.get(selection).iit.size()];
 			final int[] ycoordinates = new int[boneEdges.get(selection).iit.size()];
@@ -94,7 +93,8 @@ public class SelectROI extends RoiSelector {
 				xcoordinates[i] = boneEdges.get(selection).iit.get(i);
 				ycoordinates[i] = boneEdges.get(selection).jiit.get(i);
 			}
-			/*Flip the original image prior to adding the ROI, if scaled image is flipped*/
+			// Flip the original image prior to adding the ROI, if scaled image is
+			// flipped
 			if ((details.flipHorizontal || details.flipVertical) && imp.getRoi() != null){
 				// Remove existing ROIs in order to flip the whole image...
 				IJ.run(imp, "Select None", "");
@@ -111,18 +111,6 @@ public class SelectROI extends RoiSelector {
 				selection).iit.size(), Roi.POLYGON);
 			imp.setRoi(ijROI);
 		}
-		
-		//Visualise scaledImage
-		/*
-		ImagePlus tempImage = new ImagePlus("peeledROI");
-		tempImage.setProcessor(new FloatProcessor(width,height,scaledImage));
-		tempImage.show();
-		
-		ImagePlus tempImage2 = new ImagePlus("sieve");
-		tempImage2.setProcessor(new ByteProcessor(width,height,sieve));
-		tempImage2.setDisplayRange(0,1);
-		tempImage2.show();
-		*/
 
 		for (int j = 0; j < height; j++) {
 			for (int i = 0; i < width; i++) {

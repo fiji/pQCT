@@ -32,8 +32,8 @@ import java.util.Vector;
 
 public class DetectedEdge implements Comparable<DetectedEdge> {
 
-	public final Vector<Integer> iit; // indexes for x-coordinates
-	public final Vector<Integer> jiit; // indexes for y-coordinates
+	public final Vector<Integer> iit; // indices for x-coordinates
+	public final Vector<Integer> jiit; // indices for y-coordinates
 	public final int area;
 	public final int length;
 

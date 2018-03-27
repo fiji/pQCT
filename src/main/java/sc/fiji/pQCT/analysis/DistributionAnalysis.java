@@ -70,11 +70,6 @@ public class DistributionAnalysis {
 		final ImageAndAnalysisDetails details, final DetermineAlpha determineAlpha)
 	{
 		pInd = determineAlpha.pind;
-		
-		//for (int d = 0;d<pInd.size();++d){
-		//	IJ.log("Mapping pINd "+d+" value "+pInd.get(d));
-		//}
-		
 		sectorWidth = details.sectorWidth;
 		final int size = (int) (360d / sectorWidth);
 		endocorticalRadii = new double[size];
@@ -96,23 +91,9 @@ public class DistributionAnalysis {
 		originalROI = clone(roi.cortexROI);
 		peeledROI = clone(roi.cortexROI);
 		
-		//Visualise roi
-		/*
-		ImagePlus tempImage = new ImagePlus("peeledROI");
-		tempImage.setProcessor(new FloatProcessor(width,height,peeledROI));
-		tempImage.show();
-		*/
 		//Test peeledROI min and max values
 		final int peeledSize = width * height;
 		peeledROI = erode(peeledROI,width,height,minimum);
-		
-		
-		//Visualise roi
-		/*
-		ImagePlus tempImage2 = new ImagePlus("After peeling");
-		tempImage2.setProcessor(new FloatProcessor(width,height,peeledROI));
-		tempImage2.show();
-		*/
 		
 		for (int i = 0; i < marrowI.size(); i++) {
 			marrowCenter[0] += (double) marrowI.get(i);
@@ -120,26 +101,9 @@ public class DistributionAnalysis {
 		}
 		marrowCenter[0] /= (double) marrowI.size();
 		marrowCenter[1] /= (double) marrowJ.size();
-		//IJ.log("C0 "+marrowCenter[0]+" C1 "+marrowCenter[1]);
 		
 		peeledBMD = range(0, peeledSize).filter(i -> peeledROI[i] >= threshold).mapToDouble(ii -> {return peeledROI[ii];}).average().orElse(0.0);
 
-		
-		//range(0,peeledSize).forEach(i -> {IJ.log("i "+peeledROI[i]);});
-		/*
-		range(0, peeledSize).filter(i -> peeledROI[i] >= threshold)
-			.mapToDouble(index -> {
-				final int j = index / width;
-				final int i = index - width * j;
-				final double x = i - marrowCenter[0];
-				final double y = j - marrowCenter[1];
-				
-				return Math.sqrt(x * x + y * y);
-			}).forEach(eachZ -> {IJ.log("Rad test "+eachZ);});
-			//}).forEach((double eachZ) -> {IJ.log("Rad "+eachZ);});
-			//}).forEach(z -> {IJ.log("Rad "+z);});
-			//}).forEach(z -> IJ.log("X "+x+" Y "+y+" mx "+x+" my "+y+" rad "+Math.sqrt(x * x + y * y)););
-		*/
 		//Try old implementation here
 		Vector<Integer> cortexI = new Vector<Integer>();
 		Vector<Integer> cortexJ = new Vector<Integer>();
@@ -165,9 +129,9 @@ public class DistributionAnalysis {
 		}
 		cortexCenter[0] /=(double)cortexI.size();
 		cortexCenter[1] /=(double)cortexJ.size();
-		
-		//IJ.log("Cortex Centre X "+cortexCenter[0]+" Y "+cortexCenter[1]);
-		maxRadiusY = 0; //y for cortical pixels. used for BSI calculations, i.e. density weighted section modulus
+
+		// y for cortical pixels. used for BSI calculations, i.e. density weighted section modulus
+		maxRadiusY = 0;
 		for (int i = 0; i< cortexI.size();i++){
 			if (Math.sqrt(((double)cortexI.get(i)-cortexCenter[0])*((double)cortexI.get(i)-cortexCenter[0])
 				+((double)cortexJ.get(i)-cortexCenter[1])*((double)cortexJ.get(i)-cortexCenter[1])) > maxRadiusY){
@@ -175,24 +139,19 @@ public class DistributionAnalysis {
 				+((double)cortexJ.get(i)-cortexCenter[1])*((double)cortexJ.get(i)-cortexCenter[1]));
 			}
 		}
-		
-		
-		
+
 		maxRadius = range(0, peeledSize).filter(i -> originalROI[i] >= threshold)
 			.mapToDouble(index -> {
-				//final int j = (int) Math.floor(index / width);
 				int i = index % width;
 				int j = (int) ((index-i) / width);
 				double x = ((double) i) - marrowCenter[0];
 				double y = ((double) j) - marrowCenter[1];
-				//IJ.log("X "+x+" Y "+y+" mx "+x+" my "+y+" rad "+Math.sqrt(x * x + y * y));
 				return Math.sqrt(x * x + y * y);
 			}).max().orElse(0.0);
-			
-		maxRadius = Math.round(maxRadius*10d)/10d;	//Needs to be rounded to 0.1
-			
-		//IJ.log("Max Radius "+maxRadius+" max radiusY "+maxRadiusY);
-		//maxRadius  = maxRadiusY;
+
+		//Needs to be rounded to 0.1
+		maxRadius = Math.round(maxRadius*10d)/10d;
+
 		calculateRadii(preventPeeling);
 		rotateResults();
 	}
@@ -241,27 +200,28 @@ public class DistributionAnalysis {
 			}
 			
 
-			//Return from rMax to identify periosteal border
+			// Return from rMax to identify periosteal border
 			double rTemp = maxRadius;
 			double[] roiToObserve = preventPeeling ? originalROI : peeledROI;
 
 			while (	rTemp > r2[et]){
 				int index = (int) (x+rTemp*cosTheta)+ (((int) (y+rTemp*sinTheta))*width);
 				if (roiToObserve[index]>0){
-					rTemp+= 0.1;	//The loop went until no longer on bone
+					// The loop went until no longer on bone
+					rTemp+= 0.1;
 					break;
 				}
 				rTemp -= 0.1;				
 			}
 			
-			//Identify anatomical periosteal border			
+			// Identify anatomical periosteal border
 			if (preventPeeling){
 				rU[et] = rTemp;
 			}else{
 				rU[et] = expandRadiusMulti(originalROI, threshold, rTemp, x, y, cosTheta,sinTheta);
 			}
 
-			//Get BMD through the cortex by repeating the incrementing
+			// Get BMD through the cortex by repeating the incrementing
 			while (r[et]<rTemp){
 				r[et] = r[et] + 0.1;
 				int index = (int) (x+r[et]*cosTheta)+ (((int) (y+r[et]*sinTheta))*width);
@@ -270,7 +230,7 @@ public class DistributionAnalysis {
 				}
 			}
 			
-			//Get the BMDs here
+			// Get the BMDs here
 			
 			// Dividing the cortex to three divisions -> save the mean vBMD for each
 			// division
@@ -278,7 +238,6 @@ public class DistributionAnalysis {
 			if (analysisThickness < divisions) {
 				break;
 			}
-			//String[] labels = {'Endo','Mid','Peri'};
 			for (int div = 0; div < divisions; ++div) {
 				int mo = 0;
 				for (int ka = (int) ((double)analysisThickness*(double)div/(double)divisions);ka <(int) ((double)analysisThickness*((double)div+1.0)/(double)divisions);ka++){
@@ -288,7 +247,6 @@ public class DistributionAnalysis {
 				bMDJ.get(div)[et] /= (double) mo;
 				
 			}
-			//IJ.log(String.format(Locale.ROOT,"theta %d %.2f endo %.2f peri %.2f eBMD %.2f mBMD %.2f pBMD %.2f",et,theta[et],r2[et],r[et],bMDJ.get(0)[et],bMDJ.get(1)[et],bMDJ.get(2)[et]));
 		}
 	}
 
@@ -307,9 +265,9 @@ public class DistributionAnalysis {
 						data[(i + 1) * width + j] == bgVal |
 						data[(i) * width +j + 1] == bgVal)
 					{
+						// Erode the pixel if any of the neighborhood pixels is background
 						data[index] = bgVal - 1;
-						//IJ.log(String.format("Eroding i %d j %d",i,j)); 
-					} // Erode the pixel if any of the neighborhood pixels is background
+					}
 				}
 			}
 		}
@@ -329,9 +287,7 @@ public class DistributionAnalysis {
 		double expandedR = radius;
 		final double maxR = maxRadius;
 		while (true) {
-			//final int index = (int) (x + expandedR * cos + (y + expandedR * sin) * width);
 			int index = (int) (x+expandedR*cos)+ (((int) (y+expandedR*sin))*width);
-			//IJ.log("Index ri "+index+" val "+roi[index]+" threshold "+threshold+" maxRadius "+maxRadius);
 			if (roi[index] >= threshold | expandedR >= maxR) {
 				break;
 			}
@@ -394,21 +350,10 @@ public class DistributionAnalysis {
 				endoCorticalBMDs[pp] += bMDJ.get(0)[index] / sectorWidth;
 				midCorticalBMDs[pp] += bMDJ.get(1)[index] / sectorWidth;
 				periCorticalBMDs[pp] += bMDJ.get(2)[index] / sectorWidth;
-				
-				/*
-				IJ.log("NEW pp "+pp+" sector dd "+dd+" pind "+index +" eRad "+endocorticalRadii[pp]+" pRad "+ pericorticalRadii[pp]
-				+" eBMD "+ endoCorticalBMDs[pp]
-				+" mBMD "+ midCorticalBMDs[pp]
-				+" pBMD "+ periCorticalBMDs[pp]);
-				*/
-				//IJ.log("pp "+pp+" index "+index);
 			}
 			corticalDensity[0][pp] = endoCorticalBMDs[pp];
 			corticalDensity[1][pp] = midCorticalBMDs[pp];
 			corticalDensity[2][pp] = periCorticalBMDs[pp];
-			
-			//IJ.log("Pind "+pInd.get(pp)+" corticalDensity pp "+pp+" endo "+corticalDensity[0][pp]+" mid "+corticalDensity[1][pp]+" peri "+corticalDensity[2][pp]);
-			
 		}
 
 		// Radial distribution
@@ -417,7 +362,6 @@ public class DistributionAnalysis {
 				radialDistribution[i] += corticalDensity[i][j];
 			}
 			radialDistribution[i] /= (double) size;
-			//IJ.log("Division "+i+" vBMD "+radialDistribution[i]);
 		}
 		
 		// Polar distribution
@@ -426,7 +370,6 @@ public class DistributionAnalysis {
 				polarDistribution[j] += corticalDensity[i][j];
 			}
 			polarDistribution[j] /= (double) divisions;
-			//IJ.log("Sector "+j+" vBMD "+polarDistribution[j]);
 		}
 	}
 }

@@ -30,7 +30,6 @@ package sc.fiji.pQCT.selectroi;
 
 import java.awt.Polygon;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -45,9 +44,6 @@ import sc.fiji.pQCT.io.ImageAndAnalysisDetails;
 import sc.fiji.pQCT.io.ScaledImageData;
 
 //Debugging
-import ij.IJ;		//Float Images
-import ij.process.FloatProcessor;		//Float Images
-import ij.process.ByteProcessor;
 
 public class SelectSoftROI extends RoiSelector {
 	
@@ -63,7 +59,7 @@ public class SelectSoftROI extends RoiSelector {
 		// Soft tissue analysis
 		softSieve = null;
 		if (details.stOn) {
-			/*Get rid of measurement tube used at the UKK institute*/
+			// Get rid of measurement tube used at the UKK institute
 			final byte[] sleeve;
 			if (details.sleeveOn) {
 				sleeve = removeSleeve(softScaledImage, 25.0);
@@ -104,47 +100,23 @@ public class SelectSoftROI extends RoiSelector {
 
 			// Erode three layers of pixels from the fat sieve to get rid of higher
 			// density layer (i.e. skin) on top of fat to enable finding muscle border
-
 			byte[] muscleSieve = clone(softSieve);
 			final double[] muscleImage = clone(softScaledImage);
-			
-			
-			//DEBUGGING
-			/*
-			ImagePlus tempImage2 = new ImagePlus("sieve");
-			tempImage2.setProcessor(new ByteProcessor(width,height,clone(muscleSieve)));
-			tempImage2.setDisplayRange(0,1);
-			tempImage2.show();
-			*/
-			
+
 			// Remove skin by eroding three layers of pixels
 			for (int i = 0; i < 3; ++i) {
 				muscleSieve = erode(muscleSieve);
-				/*
-				final int size = width * height;
-				int tempCount = 0;
-				for (int jj = 0; jj<size;++jj){
-					if (muscleSieve[jj] == 1)
-						++tempCount;
-				}
-				IJ.log(String.format("Eroding %d count %d",i,tempCount));
-				*/
 			}
-			final byte[] subCutaneousFat = clone(muscleSieve);	//The three layers of skin removed
-			/*
-			ImagePlus tempImage3 = new ImagePlus("erodedsieve");
-			tempImage3.setProcessor(new ByteProcessor(width,height,muscleSieve));
-			tempImage3.setDisplayRange(0,1);
-			tempImage3.show();
-			*/
-			
+			// The three layers of skin removed
+			final byte[] subCutaneousFat = clone(muscleSieve);
+
 			// Remove everything other than the selected limb from the image
 			for (int i = 0; i < muscleSieve.length; ++i) {
 				if (muscleSieve[i] < 1) {
 					muscleImage[i] = minimum;
 				}
 			}
-			/*Look for muscle outline*/
+			// Look for muscle outline
 			final Vector<Object> muscleMasks = getSieve(muscleImage,
 				details.muscleThreshold, "Bigger", details.guessStacked,
 				details.stacked, false, false);
@@ -154,7 +126,8 @@ public class SelectSoftROI extends RoiSelector {
 			int tempMuscleArea = 0;
 			muscleSieve = new byte[softSieve.length];
 			int areaToAdd = 0;
-			/*Include areas that contribute more than 1.0% on top of what is already included*/
+			// Include areas that contribute more than 1.0% on top of what is already
+			// included
 			while (areaToAdd < muscleEdges.size() && tempMuscleArea *
 				0.01 < muscleEdges.get(areaToAdd).area)
 			{
@@ -180,8 +153,8 @@ public class SelectSoftROI extends RoiSelector {
 					subCutaneousFat[i] = 0;
 				}
 			}
-			
-			/* create temp boneResult to wipe out bone and marrow */
+
+			// create temp boneResult to wipe out bone and marrow
 			final Vector<Object> masks2 = getSieve(softScaledImage, softThreshold, details.roiChoiceSt,
 					details.guessStacked, details.stacked, false, false);
 			final byte[] boneResult = (byte[]) masks2.get(1);
@@ -191,45 +164,44 @@ public class SelectSoftROI extends RoiSelector {
 				if (softSieve[i] == 1 && softScaledImage[i] >= airThreshold &&
 					softScaledImage[i] < fatThreshold)
 				{
-					softSieve[i] = 2; // Fat
+					// Fat
+					softSieve[i] = 2;
 				}
 				if (muscleSieve[i] == 1 && boneResult[i] == 0) {
 					if (softScaledImage[i] >= muscleThreshold &&
 						softScaledImage[i] < softThreshold)
 					{
-						softSieve[i] = 3; // Muscle
+						// Muscle
+						softSieve[i] = 3;
 					}
 					if (softScaledImage[i] >= airThreshold &&
 						softScaledImage[i] < muscleThreshold)
 					{
-						softSieve[i] = 4; // Intra/Intermuscular fat
+						// Intra/Intermuscular fat
+						softSieve[i] = 4;
 					}
 				}
 				if (subCutaneousFat[i] == 1) {
-					softSieve[i] = 5; // Subcut fat
+					// Subcut fat
+					softSieve[i] = 5;
 				}
 				if (boneResult[i] == 1) {
 					if (softScaledImage[i] >= fatThreshold) {
-						softSieve[i] = 6; // Bone & marrow
+						// Bone & marrow
+						softSieve[i] = 6;
 					}
 					else {
-						softSieve[i] = 7; // Marrow fat
+						// Marrow fat
+						softSieve[i] = 7;
 					}
 				}
 				if (softSieve[i] > 0 && subCutaneousFat[i] == 0 &&
 					tempMuscleSieve[i] == 0)
 				{
-					eroded[i] = 1; // Skin eroded pixels
-					//softSieve[i] = 1;	//Flip the soft-sieve as well, debugging
+					// Skin eroded pixels
+					eroded[i] = 1;
 				}
 			}
-			
-			/*
-			ImagePlus tempImage3 = new ImagePlus("softSieve");
-			tempImage3.setProcessor(new ByteProcessor(width,height,softSieve));
-			tempImage3.setDisplayRange(0,7);
-			tempImage3.show();
-			*/
 		}
 	}
 
@@ -402,7 +374,7 @@ public class SelectSoftROI extends RoiSelector {
 			for (int i = 0; i < 3; ++i) {
 				steer[0] = (int) Math.round(Math.cos(direction));
 				steer[1] = (int) Math.round(Math.sin(direction));
-				/*Handle OOB*/
+				// Handle OOB
 				while ((returnCoordinates[0] + steer[0]) < 0 || (returnCoordinates[0] +
 					steer[0]) >= width || (returnCoordinates[1] + steer[1]) < 0 ||
 					(returnCoordinates[1] + steer[1]) >= height)

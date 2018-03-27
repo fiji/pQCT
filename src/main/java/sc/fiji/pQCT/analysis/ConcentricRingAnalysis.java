@@ -147,14 +147,9 @@ public class ConcentricRingAnalysis {
 	}
 
 	private void rotateResults() {
-		//Calculate pericortical radii
-		//Double[] pRad = DistributionAnalysis.clone(rU);
-		//IJ.log(String.format("rU length %d",rU.length));
-		//IJ.log(String.format("pRad length %d",pRad.length));
-		double[] pRad =(double []) stream(rU).map(r -> {return r *= pixelSpacing;}).toArray();
-		//IJ.log(String.format("pRad length %d",pRad.length));
+		// Calculate pericortical radii
+		final double[] pRad =(double []) stream(rU).map(r -> {return r *= pixelSpacing;}).toArray();
 		final int size = (int) (360.0 / sectorWidth);
-		//IJ.log(String.format("size %d",size));
 		for (int div = 0; div < divisions; ++div) {
 			BMDs.add(new double[size]);
 		}
@@ -164,8 +159,6 @@ public class ConcentricRingAnalysis {
 		for (int pp = 0; pp < size; pp++) {
 			for (int dd = 0; dd < (int) sectorWidth; dd++) {
 				int index = pind.get((int) (pp * sectorWidth + dd));
-				//IJ.log(String.format("pp %d dd %d index %d length prRad %d length pRad %d",pp,dd,index,
-				//			pericorticalRadii.length, pRad.length));
 				pericorticalRadii[pp] += pRad[index] / sectorWidth;
 				for (int div = 0; div < divisions; ++div) {
 					BMDs.get(div)[pp] += bMDJ.get(div)[index] / sectorWidth;

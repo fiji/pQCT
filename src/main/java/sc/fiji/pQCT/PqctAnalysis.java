@@ -90,7 +90,7 @@ public class PqctAnalysis implements PlugIn {
 		}
 		else {
 			calibrationCoefficients = new double[2];
-			/*Read calibration from TYP file database*/
+			// Read calibration from TYP file database
 			final String typFileName = getInfoProperty(imageInfo, "Device");
 			try {
 				final ClassLoader loader = getClass().getClassLoader();
@@ -443,7 +443,7 @@ public class PqctAnalysis implements PlugIn {
 	private static ImagePlus drawMarrowCenter(final ImagePlus tempImage,
 		final double aplha, final double[] marrowCenter)
 	{
-		for (int i = 0; i < 10; i++) {// 45;i++) {//
+		for (int i = 0; i < 10; i++) {
 			int x = ((int) (marrowCenter[0] + i));
 			int y = ((int) (marrowCenter[1]));
 			final ImageProcessor processor = tempImage.getProcessor();
@@ -468,7 +468,7 @@ public class PqctAnalysis implements PlugIn {
 		return tempImage;
 	}
 
-	/*Concentric rings distribution result image*/
+	// Concentric rings distribution result image
 	private static ImagePlus drawPeriRadii(final ImagePlus tempImage,
 		final double[] marrowCenter, final Vector<Integer> pindColor,
 		final double[] r, final double[] theta)
@@ -502,7 +502,6 @@ public class PqctAnalysis implements PlugIn {
 			tempImage.getProcessor().setColor(new Color(0, (int) (255.0 * colorScale),
 				(int) (255.0 * (1.0 - colorScale))));
 			tempImage.getProcessor().drawPixel(x, y);
-			//IJ.log(String.format(Locale.ROOT,"I %d x %d y %d pIndColor %d",i,x,y,pindColor.get(i)));
 		}
 		return tempImage;
 	}
@@ -543,7 +542,6 @@ public class PqctAnalysis implements PlugIn {
 		cal.pixelWidth = cal.pixelHeight = pixelSpacing;
 		tempImage.setCalibration(cal);
 		tempImage.getProcessor().setColor(new Color(255, 0, 0));
-		// System.out.println("drawLine");
 		tempImage.getProcessor().drawLine(5, 5, (int) (5.0 + 10.0 / pixelSpacing),
 			5);
 		tempImage.getProcessor().drawString("1 cm", 5, 20);
@@ -551,7 +549,7 @@ public class PqctAnalysis implements PlugIn {
 	}
 
 	// TODO Can be called from there?
-	/*Function taken from ij.plugin.CanvasResizer*/
+	// Function taken from ij.plugin.CanvasResizer
 	private static ImageProcessor expandImage(final ImageProcessor ipOld,
 		final int wNew, final int hNew, final int xOff, final int yOff)
 	{
@@ -563,7 +561,7 @@ public class PqctAnalysis implements PlugIn {
 		return ipNew;
 	}
 
-	/*Get image into which we'll start adding stuff*/
+	// Get image into which we'll start adding stuff
 	private static ImagePlus getRGBResultImage(final double[] values,
 		final int width, final int height, final String path)
 	{
@@ -695,7 +693,7 @@ public class PqctAnalysis implements PlugIn {
 		return results;
 	}
 
-	/*Add bone sieve Stratec*/
+	// Add bone sieve Stratec
 	private static ImagePlus tintBoneStratec(final ImagePlus tempImage,
 		final byte[] sieve, final double[] scaledImage,
 		final double marrowThreshold, final byte[] stratecSieve)
