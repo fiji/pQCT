@@ -102,7 +102,7 @@ public class DistributionAnalysis {
 		marrowCenter[0] /= marrowI.size();
 		marrowCenter[1] /= marrowJ.size();
 		
-		peeledBMD = range(0, peeledSize).filter(i -> peeledROI[i] >= threshold).mapToDouble(ii -> {return peeledROI[ii];}).average().orElse(0.0);
+		peeledBMD = range(0, peeledSize).filter(i -> peeledROI[i] >= threshold).mapToDouble(ii -> peeledROI[ii]).average().orElse(0.0);
 
 		//Try old implementation here
 		final Vector<Integer> cortexI = new Vector<>();
@@ -316,8 +316,8 @@ public class DistributionAnalysis {
 	private void rotateResults() {
 		// Calculate the endocortical and pericortical radii along with the
 		// corresponding radii after peeling one layer of pixels
-		final double[] pRad = stream(rU).map(r -> {return r *= pixelSpacing;}).toArray();
-		final double[] eRad = stream(rS).map(r -> {return r *= pixelSpacing;}).toArray();
+		final double[] pRad = stream(rU).map(r -> r *= pixelSpacing).toArray();
+		final double[] eRad = stream(rS).map(r -> r *= pixelSpacing).toArray();
 		final int size = (int) (360.0 / sectorWidth);
 		final double[][] corticalDensity = new double[(int) divisions][size];
 		// Calculate the division and sector values of vBMD
