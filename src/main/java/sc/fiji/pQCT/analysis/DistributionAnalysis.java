@@ -58,7 +58,6 @@ public class DistributionAnalysis {
 	private double[] peeledROI;
 	private final double sectorWidth;
 	private final double divisions;
-	private final double minimum;
 	private final double threshold;
 	private final double[] rS = new double[360];
 	private final double[] rU = new double[360];
@@ -82,7 +81,7 @@ public class DistributionAnalysis {
 		radialDistribution = new double[(int) divisions];
 		final boolean preventPeeling = details.preventPeeling;
 		threshold = details.bMDThreshold;
-		minimum = roi.minimum;
+		final double minimum = roi.minimum;
 		final Vector<Integer> marrowI = roi.boneMarrowRoiI;
 		final Vector<Integer> marrowJ = roi.boneMarrowRoiJ;
 		height = roi.height;
@@ -93,7 +92,7 @@ public class DistributionAnalysis {
 		
 		//Test peeledROI min and max values
 		final int peeledSize = width * height;
-		peeledROI = erode(peeledROI,width,height,minimum);
+		peeledROI = erode(peeledROI,width,height, minimum);
 		
 		for (int i = 0; i < marrowI.size(); i++) {
 			marrowCenter[0] += (double) marrowI.get(i);
