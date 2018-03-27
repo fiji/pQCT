@@ -158,7 +158,7 @@ public class ConcentricRingAnalysis {
 		// Calculate the division and sector values of vBMD
 		for (int pp = 0; pp < size; pp++) {
 			for (int dd = 0; dd < (int) sectorWidth; dd++) {
-				int index = pind.get((int) (pp * sectorWidth + dd));
+				final int index = pind.get((int) (pp * sectorWidth + dd));
 				pericorticalRadii[pp] += pRad[index] / sectorWidth;
 				for (int div = 0; div < divisions; ++div) {
 					BMDs.get(div)[pp] += bMDJ.get(div)[index] / sectorWidth;

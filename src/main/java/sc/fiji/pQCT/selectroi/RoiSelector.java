@@ -137,7 +137,7 @@ public abstract class RoiSelector {
 			initialX.add(x);
 			initialY.add(y);
 			sieveTemp[x + y * width] = 1;
-			byte[] sieveTemp2 = sieveTemp.clone();
+			final byte[] sieveTemp2 = sieveTemp.clone();
 			boolean noLeak = true;
 			while (!initialX.isEmpty()) {
 
@@ -1070,7 +1070,7 @@ public abstract class RoiSelector {
 		return sleeve;
 	}
 
-	public byte[] erode(byte[] data) {
+	public byte[] erode(final byte[] data) {
 		// Erode algorithm
 		// Modified from the best dilate by one solution taken from
 		// http://ostermiller.org/dilate_and_erode.html

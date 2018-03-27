@@ -105,8 +105,8 @@ public class DistributionAnalysis {
 		peeledBMD = range(0, peeledSize).filter(i -> peeledROI[i] >= threshold).mapToDouble(ii -> {return peeledROI[ii];}).average().orElse(0.0);
 
 		//Try old implementation here
-		Vector<Integer> cortexI = new Vector<>();
-		Vector<Integer> cortexJ = new Vector<>();
+		final Vector<Integer> cortexI = new Vector<>();
+		final Vector<Integer> cortexJ = new Vector<>();
 		double maxRadiusY = 0;
 		for (int j = 0; j< height;j++){
 			for (int i = 0; i<width;i++){
@@ -121,7 +121,7 @@ public class DistributionAnalysis {
 				}
 			}
 		}
-		double[] cortexCenter = new double[2];
+		final double[] cortexCenter = new double[2];
 		for (int i = 0; i< cortexI.size();i++){
 			cortexCenter[0]+=(double)cortexI.get(i);
 			cortexCenter[1]+=(double)cortexJ.get(i);
@@ -158,7 +158,7 @@ public class DistributionAnalysis {
 
 	// TODO Add a boolean parameter preventPeeling, and combine method with
 	// calculateRadiiNoPeeling
-	private void calculateRadii(boolean preventPeeling) {
+	private void calculateRadii(final boolean preventPeeling) {
 		// Calculate radii in polar coordinate system originating from bone marrow
 		// center of mass
 		for (int i = 0; i < divisions; ++i) {
@@ -178,8 +178,8 @@ public class DistributionAnalysis {
 			}
 			
 			// Anatomical endosteal border
-			double sinTheta = Math.sin(theta[et]);
-			double cosTheta = Math.cos(theta[et]);
+			final double sinTheta = Math.sin(theta[et]);
+			final double cosTheta = Math.cos(theta[et]);
 			
 			r[et] = expandRadius(originalROI, threshold, r[et], x, y, cosTheta,sinTheta);
 			rS[et] = r[et];
@@ -194,10 +194,10 @@ public class DistributionAnalysis {
 
 			// Return from rMax to identify periosteal border
 			double rTemp = maxRadius;
-			double[] roiToObserve = preventPeeling ? originalROI : peeledROI;
+			final double[] roiToObserve = preventPeeling ? originalROI : peeledROI;
 
 			while (	rTemp > r2[et]){
-				int index = (int) (x+rTemp*cosTheta)+ (((int) (y+rTemp*sinTheta))*width);
+				final int index = (int) (x+rTemp*cosTheta)+ (((int) (y+rTemp*sinTheta))*width);
 				if (roiToObserve[index]>0){
 					// The loop went until no longer on bone
 					rTemp+= 0.1;
@@ -216,7 +216,7 @@ public class DistributionAnalysis {
 			// Get BMD through the cortex by repeating the incrementing
 			while (r[et]<rTemp){
 				r[et] = r[et] + 0.1;
-				int index = (int) (x+r[et]*cosTheta)+ (((int) (y+r[et]*sinTheta))*width);
+				final int index = (int) (x+r[et]*cosTheta)+ (((int) (y+r[et]*sinTheta))*width);
 				if (roiToObserve[index] > 0){
 					BMD_temp.add(originalROI[index]);
 				}
@@ -244,7 +244,7 @@ public class DistributionAnalysis {
 
 	// TODO Refactor into a static utility method for all classes instead of
 	// repeating code
-	public static double[] erode(double[] data,int width,int height,double bgVal) {
+	public static double[] erode(final double[] data, final int width, final int height, final double bgVal) {
 		// Erode algorithm
 		// Modified from the best dilate by one solution taken from
 		// http://ostermiller.org/dilate_and_erode.html
@@ -279,7 +279,7 @@ public class DistributionAnalysis {
 		double expandedR = radius;
 		final double maxR = maxRadius;
 		while (true) {
-			int index = (int) (x+expandedR*cos)+ (((int) (y+expandedR*sin))*width);
+			final int index = (int) (x+expandedR*cos)+ (((int) (y+expandedR*sin))*width);
 			if (roi[index] >= threshold | expandedR >= maxR) {
 				break;
 			}
@@ -326,7 +326,7 @@ public class DistributionAnalysis {
 				
 				
 				
-				int index = pInd.get((int) (pp * sectorWidth + dd));
+				final int index = pInd.get((int) (pp * sectorWidth + dd));
 				
 					
 				

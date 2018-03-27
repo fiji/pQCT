@@ -120,7 +120,7 @@ public class SoftTissueAnalysis {
 		peeledA*=areaScale;
 		
 		//Added SubCutFatDMedian 2016/01/08
-		double[] subCFatPixels = new double[(int) subCutFatA];
+		final double[] subCFatPixels = new double[(int) subCutFatA];
 		int cnt =0;
 		for (int i =0;i<roi.width*roi.height;i++){
 			if (roi.softSieve[i] ==5){
