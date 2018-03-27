@@ -244,7 +244,7 @@ public class DistributionAnalysis {
 
 	// TODO Refactor into a static utility method for all classes instead of
 	// repeating code
-	public static double[] erode(final double[] data, final int width, final int height, final double bgVal) {
+	private static double[] erode(final double[] data, final int width, final int height, final double bgVal) {
 		// Erode algorithm
 		// Modified from the best dilate by one solution taken from
 		// http://ostermiller.org/dilate_and_erode.html

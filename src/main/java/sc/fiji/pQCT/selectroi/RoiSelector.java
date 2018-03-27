@@ -367,8 +367,8 @@ public abstract class RoiSelector {
 		return returnVectorVectorPointer;
 	}
 
-	protected byte[] dilate(final byte[] data, final byte dilateVal, final byte min,
-		final byte temp)
+	byte[] dilate(final byte[] data, final byte dilateVal, final byte min,
+				  final byte temp)
 	{
 		// Dilate algorithm
 		// Best dilate by one solution taken from
@@ -1070,7 +1070,7 @@ public abstract class RoiSelector {
 		return sleeve;
 	}
 
-	public byte[] erode(final byte[] data) {
+	byte[] erode(final byte[] data) {
 		// Erode algorithm
 		// Modified from the best dilate by one solution taken from
 		// http://ostermiller.org/dilate_and_erode.html

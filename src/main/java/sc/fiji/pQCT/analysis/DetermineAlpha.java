@@ -277,7 +277,7 @@ public class DetermineAlpha {
 		}
 	}
 
-	Vector<Integer> rotateIndex(final int rotationAngle) {
+	private Vector<Integer> rotateIndex(final int rotationAngle) {
 		final int initialIndex;
 		final Vector<Integer> rotateIndexVector = new Vector<>();
 		if (rotationAngle >= 0) {
