@@ -28,14 +28,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package sc.fiji.pQCT.analysis;
 
-import java.util.DoubleSummaryStatistics;
-import java.util.function.Function;
-import java.util.stream.IntStream;
-
 import sc.fiji.pQCT.selectroi.SelectSoftROI;
-
-//Debugging
-import ij.IJ;		//log
 
 public class SoftTissueAnalysis {
 

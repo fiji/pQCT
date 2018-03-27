@@ -30,15 +30,11 @@ package sc.fiji.pQCT.analysis;
 
 import static java.util.Arrays.stream;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
 import sc.fiji.pQCT.io.ImageAndAnalysisDetails;
 import sc.fiji.pQCT.selectroi.SelectROI;
-
-//Debugging
-//import ij.IJ;
 
 public class ConcentricRingAnalysis {
 

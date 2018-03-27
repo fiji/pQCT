@@ -42,12 +42,6 @@ import ij.ImagePlus;
 import sc.fiji.pQCT.io.ImageAndAnalysisDetails;
 import sc.fiji.pQCT.io.ScaledImageData;
 
-
-//Debugging
-//import ij.IJ;		//Float Images
-//import ij.process.FloatProcessor;		//Float Images
-//import ij.process.ByteProcessor;
-
 public abstract class RoiSelector {
 
 	public final ImageAndAnalysisDetails details;

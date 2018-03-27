@@ -28,7 +28,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package sc.fiji.pQCT.analysis;
 
-import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.IntStream.range;
 
 import java.util.Arrays;
@@ -36,14 +35,11 @@ import java.util.Collections;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import sc.fiji.pQCT.io.ImageAndAnalysisDetails;
 import sc.fiji.pQCT.selectroi.DetectedEdge;
 import sc.fiji.pQCT.selectroi.RoiSelector;
 import sc.fiji.pQCT.selectroi.SelectROI;
-
-//import ij.IJ;	//Debugging
 
 public class DetermineAlpha {
 

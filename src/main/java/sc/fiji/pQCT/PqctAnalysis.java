@@ -38,7 +38,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.DoubleStream;
 
 import ij.IJ;
-import java.util.Locale;	///Debugging
 import ij.ImagePlus;
 import ij.Prefs;
 import ij.WindowManager;

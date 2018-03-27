@@ -30,19 +30,12 @@ package sc.fiji.pQCT.analysis;
 
 import static java.util.Arrays.stream;
 import static java.util.stream.IntStream.range;
-import java.util.function.DoubleConsumer;
 
 import java.util.List;
 import java.util.Vector;
 
 import sc.fiji.pQCT.io.ImageAndAnalysisDetails;
 import sc.fiji.pQCT.selectroi.SelectROI;
-
-//Debugging
-import ij.IJ;
-import ij.ImagePlus;					//Image creation
-import ij.process.FloatProcessor;		//Float Images
-import java.util.Locale;
 
 public class DistributionAnalysis {
 
