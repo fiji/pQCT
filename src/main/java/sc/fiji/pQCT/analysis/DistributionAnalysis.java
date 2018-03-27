@@ -88,8 +88,8 @@ public class DistributionAnalysis {
 		height = roi.height;
 		width = roi.width;
 		pixelSpacing = roi.pixelSpacing;
-		originalROI = clone(roi.cortexROI);
-		peeledROI = clone(roi.cortexROI);
+		originalROI = roi.cortexROI.clone();
+		peeledROI = roi.cortexROI.clone();
 		
 		//Test peeledROI min and max values
 		final int peeledSize = width * height;
@@ -154,14 +154,6 @@ public class DistributionAnalysis {
 
 		calculateRadii(preventPeeling);
 		rotateResults();
-	}
-	
-	public static double[] clone(double[] a){
-		double[] b = new double[a.length];
-		for (int i = 0;i<a.length;++i){
-			b[i] = a[i];
-		}
-		return b;
 	}
 
 	// TODO Add a boolean parameter preventPeeling, and combine method with

@@ -137,7 +137,7 @@ public abstract class RoiSelector {
 			initialX.add(x);
 			initialY.add(y);
 			sieveTemp[x + y * width] = 1;
-			byte[] sieveTemp2 = clone(sieveTemp);
+			byte[] sieveTemp2 = sieveTemp.clone();
 			boolean noLeak = true;
 			while (!initialX.isEmpty()) {
 
@@ -163,25 +163,9 @@ public abstract class RoiSelector {
 
 			}
 			if (noLeak) {
-				sieveTemp = clone(sieveTemp2);
+				sieveTemp = sieveTemp2.clone();
 			}
 		}
-	}
-
-	protected static double[] clone(double[] a){
-		double[] b = new double[a.length];
-		for (int i = 0;i<a.length;++i){
-			b[i] = a[i];
-		}
-		return b;
-	}
-
-	protected static byte[] clone(byte[] a){
-		byte[] b = new byte[a.length];
-		for (int i = 0;i<a.length;++i){
-			b[i] = a[i];
-		}
-		return b;
 	}
 
 	// DetectedEdge

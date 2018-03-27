@@ -70,7 +70,7 @@ public class SelectSoftROI extends RoiSelector {
 			final Roi ijROI = imp.getRoi();
 			if (ijROI != null && details.manualRoi) {
 				// Set pixels outside the manually selected ROI to zero
-				final double[] tempScaledImage = clone(softScaledImage);
+				final double[] tempScaledImage = softScaledImage.clone();
 				// Check whether pixel is within ROI, mark with bone threshold
 				for (int j = 0; j < height; j++) {
 					for (int i = 0; i < width; i++) {
@@ -97,15 +97,15 @@ public class SelectSoftROI extends RoiSelector {
 
 			// Erode three layers of pixels from the fat sieve to get rid of higher
 			// density layer (i.e. skin) on top of fat to enable finding muscle border
-			byte[] muscleSieve = clone(softSieve);
-			final double[] muscleImage = clone(softScaledImage);
+			byte[] muscleSieve =softSieve.clone();
+			final double[] muscleImage = softScaledImage.clone();
 
 			// Remove skin by eroding three layers of pixels
 			for (int i = 0; i < 3; ++i) {
 				muscleSieve = erode(muscleSieve);
 			}
 			// The three layers of skin removed
-			final byte[] subCutaneousFat = clone(muscleSieve);
+			final byte[] subCutaneousFat = muscleSieve.clone();
 
 			// Remove everything other than the selected limb from the image
 			for (int i = 0; i < muscleSieve.length; ++i) {
@@ -141,7 +141,7 @@ public class SelectSoftROI extends RoiSelector {
 			}
 
 			// Dilate the sieve to include all muscle pixels
-			byte[] tempMuscleSieve = clone(muscleSieve);
+			byte[] tempMuscleSieve = muscleSieve.clone();
 			tempMuscleSieve = dilate(tempMuscleSieve, (byte) 1, (byte) 0, (byte) 2);
 			
 			eroded = new byte[softSieve.length];
