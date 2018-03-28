@@ -52,27 +52,35 @@ public abstract class RoiSelector {
 	public final int width;
 	// For cortical area analyses (CoA, sSI, I), and peeling distal pixels
 	public final double areaThreshold;
-	public final double BMDthreshold; // For cortical bMD analyses
+	// For cortical bMD analyses
+	public final double BMDthreshold;
 	public final ScaledImageData scaledImageData;
 	public final ImagePlus imp;
 	final double airThreshold;
 	final double fatThreshold;
 	final double muscleThreshold;
-	final double softThreshold; // Thresholding soft tissues + marrow from bone
+	// Thresholding soft tissues + marrow from bone
+	final double softThreshold;
 	public double[] cortexROI;
 	public Vector<Integer> boneMarrowRoiI;
 	public Vector<Integer> boneMarrowRoiJ;
-	public Vector<Integer> cortexRoiI; // For bMD analyses
-	public Vector<Integer> cortexRoiJ; // For bMD analyses
-	public Vector<Integer> cortexAreaRoiI; // For area analyses
-	public Vector<Integer> cortexAreaRoiJ; // For area analyses
+	// For bMD analyses
+	public Vector<Integer> cortexRoiI;
+	// For bMD analyses
+	public Vector<Integer> cortexRoiJ;
+	// For area analyses
+	public Vector<Integer> cortexAreaRoiI;
+	// For area analyses
+	public Vector<Integer> cortexAreaRoiJ;
 	public Vector<Integer> area;
 	public Vector<Integer> length;
 	public int selection;
 	public double pixelSpacing;
 	public byte[] sieve;
-	public byte[] softSieve; // Mask for soft tissues
-	byte[] result; // Will contain filled bones
+	// Mask for soft tissues
+	public byte[] softSieve;
+	// Will contain filled bones
+	byte[] result;
 
 	RoiSelector(final ScaledImageData dataIn,
 		final ImageAndAnalysisDetails detailsIn, final ImagePlus imp)
@@ -101,6 +109,10 @@ public abstract class RoiSelector {
 		final Vector<Integer> roiJ, final int width, final int height,
 		final double[] scaledImage, final double threshold)
 	{
+
+		final int[][] fourconnectedNHood = { { -1, 0 }, { 1, 0 }, { 0, -1 }, { 0,
+			1 } };
+
 		// Fill the area enclosed by the traced edge contained in roiI,roiJ
 		// beginning needs to be within the traced edge
 		byte[] sieveTemp = new byte[width * height];
@@ -110,7 +122,7 @@ public abstract class RoiSelector {
 			sieveTemp[roiI.get(z) + roiJ.get(z) * width] = 1;
 		}
 
-		/*Determine the flood fill init*/
+		// Determine the flood fill init
 		int[] tempCoordinates;
 		while (true) {
 			tempCoordinates = findFillInit(sieveTemp, roiI, roiJ, scaledImage,
@@ -129,8 +141,10 @@ public abstract class RoiSelector {
 			final byte[] sieveTemp2 = sieveTemp.clone();
 			boolean noLeak = true;
 			while (!initialX.isEmpty()) {
+
 				x = initialX.remove(initialX.size() - 1);
 				y = initialY.remove(initialY.size() - 1);
+
 				final int index = x + y * width;
 				if (sieveTemp2[index] == 0) {
 					sieveTemp2[index] = 1;
@@ -140,22 +154,24 @@ public abstract class RoiSelector {
 					break;
 				}
 				// Check 4-connected neighbours
-				for (int j = y - 1; j <= y + 1; j+=2) {
-					for (int i = x - 1; i <= x + 1; i+=2) {
-						if (sieveTemp2[i + j * width] == 0) {
-							initialX.add(i);
-							initialY.add(j);
-						}
+				for (final int[] aFourconnectedNHood : fourconnectedNHood) {
+					if (sieveTemp2[x + aFourconnectedNHood[0] + (y +
+						aFourconnectedNHood[1]) * width] == 0)
+					{
+						initialX.add(x + aFourconnectedNHood[0]);
+						initialY.add(y + aFourconnectedNHood[1]);
 					}
+
 				}
+
 			}
 			if (noLeak) {
-				sieveTemp = sieveTemp2;
+				sieveTemp = sieveTemp2.clone();
 			}
 		}
 	}
 
-	/*DetectedEdge*/
+	// DetectedEdge
 	public static int[] twoLargestBonesDetectedEdges(
 		final List<DetectedEdge> edges)
 	{
@@ -180,7 +196,7 @@ public abstract class RoiSelector {
 		return twoLongest;
 	}
 
-	/*DetectedEdge*/
+	// DetectedEdge
 	private double[] calcDistancesFromCentreOfLimb(final List<DetectedEdge> edges,
 		final double[] tempScaledImage, final double fatThreshold)
 	{
@@ -191,12 +207,12 @@ public abstract class RoiSelector {
 				bones.get(i)[j] = 0;
 			}
 		}
-		/*Find the centre of area of the limb*/
+		// Find the centre of area of the limb
 		final int maxIndice = selectRoiBiggestBoneDetectedEdges(edges);
 		final byte[] limbSieve = new byte[tempScaledImage.length];
 		limbSieve[edges.get(maxIndice).iit.get(0) + edges.get(maxIndice).jiit.get(
 			0) * width] = 1;
-		/*Dilate muscleSieve, into neighbouring fat pixels*/
+		// Dilate muscleSieve, into neighbouring fat pixels
 		int tempDil = 1;
 		while (tempDil > 0) {
 			tempDil = dilateLimb(limbSieve, (byte) 1, (byte) 0, (byte) 4,
@@ -216,7 +232,7 @@ public abstract class RoiSelector {
 		}
 		limbCenterX /= limbPoints;
 		limbCenterY /= limbPoints;
-		/*Find the centres of circumference of the bones*/
+		// Find the centres of circumference of the bones
 		final double[] distanceFromCentreOfLimb = new double[edges.size()];
 		for (int i = 0; i < edges.size(); ++i) {
 			for (int j = 0; j < edges.get(i).iit.size(); j++) {
@@ -226,14 +242,14 @@ public abstract class RoiSelector {
 			}
 			bones.get(i)[0] /= bones.get(i)[2];
 			bones.get(i)[1] /= bones.get(i)[2];
+			// Square root omitted, as it does not affect the order...
 			distanceFromCentreOfLimb[i] = Math.pow(limbCenterX - bones.get(i)[0],
-				2.0) + Math.pow(limbCenterY - bones.get(i)[1],
-					2.0); /*Square root omitted, as it does not affect the order...*/
+				2.0) + Math.pow(limbCenterY - bones.get(i)[1], 2.0);
 		}
 		return distanceFromCentreOfLimb;
 	}
 
-	/*	Remove the extra part from vectors and replace with a straight line	*/
+	// Remove the extra part from vectors and replace with a straight line
 	private Vector<Vector<Integer>> cleave(final byte[] result,
 		final Vector<Integer> fatRoiI, final Vector<Integer> fatRoiJ,
 		final int[] cleavingIndices)
@@ -242,22 +258,20 @@ public abstract class RoiSelector {
 		final int initJ = fatRoiJ.get(cleavingIndices[0]);
 		final int targetI = fatRoiI.get(cleavingIndices[1]);
 		final int targetJ = fatRoiJ.get(cleavingIndices[1]);
-		/*remove cleaved elements*/
+		// remove cleaved elements
 		int replacementI = fatRoiI.get(cleavingIndices[0]);
 		int replacementJ = fatRoiJ.get(cleavingIndices[0]);
+		// the elements to be cleaved
 		final List<Integer> cleavedI = new Vector<>(fatRoiI.subList(
-			cleavingIndices[0] + 1, cleavingIndices[1] +
-				1)); /*the elements to be cleaved*/
+			cleavingIndices[0] + 1, cleavingIndices[1] + 1));
 		final List<Integer> cleavedJ = new Vector<>(fatRoiJ.subList(
-			cleavingIndices[0] + 1, cleavingIndices[1] +
-				1)); /*the elements to be cleaved*/
+			cleavingIndices[0] + 1, cleavingIndices[1] + 1));
 		for (int i = cleavingIndices[0]; i < cleavingIndices[1]; ++i) {
-			fatRoiI.removeElementAt(
-				cleavingIndices[0]); /*Remove the elements to be cleaved*/
-			fatRoiJ.removeElementAt(
-				cleavingIndices[0]); /*Remove the elements to be cleaved*/
+			// Remove the elements to be cleaved
+			fatRoiI.removeElementAt(cleavingIndices[0]);
+			fatRoiJ.removeElementAt(cleavingIndices[0]);
 		}
-		/*Insert replacement line*/
+		// Insert replacement line
 		final double replacementLength = cleavingIndices[1] - cleavingIndices[0];
 		final double repILength = targetI - initI;
 		final double repJLength = targetJ - initJ;
@@ -351,38 +365,6 @@ public abstract class RoiSelector {
 		return returnVectorVectorPointer;
 	}
 
-	private byte[] dilate(final byte[] data, final byte dilateVal, final byte min,
-		final byte temp)
-	{
-		// Dilate algorithm
-		// Best dilate by one solution taken from
-		// http://ostermiller.org/dilate_and_erode.html
-		for (int i = 0; i < height; i++) {
-			for (int j = 0; j < width; j++) {
-				if (data[i * width + j] == dilateVal) {
-					if (i > 0 && data[(i - 1) * width + j] == min) {
-						data[(i - 1) * width + j] = temp;
-					}
-					if (j > 0 && data[(i) * width + j - 1] == min) {
-						data[i * width + j - 1] = temp;
-					}
-					if (i + 1 < height && data[(i + 1) * width + j] == min) {
-						data[(i + 1) * width + j] = temp;
-					}
-					if (j + 1 < width && data[i * width + j + 1] == min) {
-						data[i * width + j + 1] = temp;
-					}
-				}
-			}
-		}
-		for (int i = 0; i < data.length; i++) {
-			if (data[i] == temp) {
-				data[i] = dilateVal; // Set to proper value here...
-			}
-		}
-		return data;
-	}
-
 	private int dilateLimb(final byte[] data, final byte dilateVal,
 		final byte min, final byte temp, final double threshold,
 		final double[] scaledImage)
@@ -419,14 +401,15 @@ public abstract class RoiSelector {
 		}
 		for (int i = 0; i < width * height; i++) {
 			if (data[i] == temp) {
-				data[i] = dilateVal; // Set to proper value here...
+				// Set to proper value here...
+				data[i] = dilateVal;
 				++dilated;
 			}
 		}
 		return dilated;
 	}
 
-	/*DetectedEdge version*/
+	// DetectedEdge version
 	private Vector<Object> fillResultEdge(byte[] result,
 		final Vector<Integer> iit, final Vector<Integer> jiit,
 		final double[] scaledImage, final double threshold)
@@ -461,7 +444,7 @@ public abstract class RoiSelector {
 		return results;
 	}
 
-	/*DetectEdge*/
+	// DetectEdge
 	private Vector<Object> findEdge(final double[] scaledImage,
 		final double threshold, final boolean allowCleaving)
 	{
@@ -500,19 +483,19 @@ public abstract class RoiSelector {
 			}
 			result[i + j * width] = 1;
 
-			/*Tracing algorithm DetectedEdge*/
+			// Tracing algorithm DetectedEdge
 			final Vector<Object> returned = traceEdge(scaledImage, result, threshold,
 				i, j);
 			result = (byte[]) returned.get(0);
 			final Vector<Integer> newIit = (Vector<Integer>) returned.get(1);
 			final Vector<Integer> newJiit = (Vector<Integer>) returned.get(2);
-			/*Tracing algorithm done...*/
+			// Tracing algorithm done...
 
 			if (allowCleaving) {
 				final Vector<Vector<Vector<Integer>>> returnedVectors = cleaveEdge(
 					result, newIit, newJiit, 3.0, 6.0);
 				for (final Vector<Vector<Integer>> returnedVector : returnedVectors) {
-					/*Fill edge within result..*/
+					// Fill edge within result..
 					final Vector<Integer> iit = new Vector<>();
 					final Vector<Integer> jiit = new Vector<>();
 					for (int ii = 0; ii < returnedVector.get(0).size(); ++ii) {
@@ -529,7 +512,7 @@ public abstract class RoiSelector {
 				}
 			}
 			else {
-				/*Fill edge within result..*/
+				// Fill edge within result..
 				final Vector<Integer> iit = new Vector<>();
 				final Vector<Integer> jiit = new Vector<>();
 				for (int ii = 0; ii < newIit.size(); ++ii) {
@@ -562,7 +545,7 @@ public abstract class RoiSelector {
 		return returnVector;
 	}
 
-	/*DetectedEdge. Find fill init by steering clockwise from next to previous*/
+	// DetectedEdge. Find fill init by steering clockwise from next to previous
 	private int[] findFillInit(final byte[] result, final Vector<Integer> iit,
 		final Vector<Integer> jiit, final double[] scaledImage,
 		final double threshold)
@@ -606,7 +589,7 @@ public abstract class RoiSelector {
 		return null;
 	}
 
-	/*DetectedEdge*/
+	// DetectedEdge
 	private static boolean guessFlipLarger(final List<DetectedEdge> edges,
 		final boolean stacked)
 	{
@@ -640,7 +623,7 @@ public abstract class RoiSelector {
 		return returnValue;
 	}
 
-	/*DetectedEdge Only two biggest bone will be considered..*/
+	// DetectedEdge Only two biggest bone will be considered..
 	private static boolean guessFlipSelection(final List<DetectedEdge> edges,
 		final int selection, final boolean stacked)
 	{
@@ -715,7 +698,7 @@ public abstract class RoiSelector {
 		return returnValue;
 	}
 
-	/*DetectedEdge*/
+	// DetectedEdge
 	private static int selectRoiBiggestBoneDetectedEdges(
 		final List<DetectedEdge> edges)
 	{
@@ -731,12 +714,12 @@ public abstract class RoiSelector {
 		return maxPos;
 	}
 
-	/*DetectedEdge*/
+	// DetectedEdge
 	private static int selectRoiBottomBone(final Collection<DetectedEdge> edges) {
 		return selectRoiFirstNthFromTop(edges, edges.size() - 1);
 	}
 
-	/*DetectedEdge*/
+	// DetectedEdge
 	private int selectRoiCentralBone(final List<DetectedEdge> edges,
 		final double[] tempScaledImage, final double fatThreshold)
 	{
@@ -752,7 +735,7 @@ public abstract class RoiSelector {
 		return counter;
 	}
 
-	/*DetectedEdge , indexing from 0*/
+	// DetectedEdge , indexing from 0
 	private static int selectRoiFirstNthFromLeft(
 		final Collection<DetectedEdge> edges, final int nth)
 	{
@@ -763,7 +746,7 @@ public abstract class RoiSelector {
 		return indices.indexOf(nthLeast);
 	}
 
-	/*DetectedEdge, indexing from 0*/
+	// DetectedEdge, indexing from 0
 	private static int selectRoiFirstNthFromTop(
 		final Collection<DetectedEdge> edges, final int nth)
 	{
@@ -774,14 +757,14 @@ public abstract class RoiSelector {
 		return indices.indexOf(nthLeast);
 	}
 
-	/*DetectedEdge*/
+	// DetectedEdge
 	private static int selectRoiLeftmostBone(
 		final Collection<DetectedEdge> edges)
 	{
 		return selectRoiFirstNthFromLeft(edges, 0);
 	}
 
-	/*DetectedEdge*/
+	// DetectedEdge
 	private int selectRoiPeripheralBone(final List<DetectedEdge> edges,
 		final double[] tempScaledImage, final double fatThreshold)
 	{
@@ -797,14 +780,14 @@ public abstract class RoiSelector {
 		return counter;
 	}
 
-	/*DetectedEdge*/
+	// DetectedEdge
 	private static int selectRoiRightmostBone(
 		final Collection<DetectedEdge> edges)
 	{
 		return selectRoiFirstNthFromLeft(edges, edges.size() - 1);
 	}
 
-	/*DetectedEdge*/
+	// DetectedEdge
 	private static int selectRoiSecondLargestBoneDetectedEdges(
 		final List<DetectedEdge> edges)
 	{
@@ -816,7 +799,7 @@ public abstract class RoiSelector {
 		return edges.indexOf(sortedEdges.get(edges.size() - 2));
 	}
 
-	/*DetectedEdge*/
+	// DetectedEdge
 	private static int selectRoiSmallestBoneDetectedEdges(
 		final List<DetectedEdge> edges)
 	{
@@ -825,27 +808,27 @@ public abstract class RoiSelector {
 		return edges.indexOf(leastAreaEdge);
 	}
 
-	/*DetectedEdge*/
+	// DetectedEdge
 	private static int selectRoiTopBone(final Collection<DetectedEdge> edges) {
 		return selectRoiFirstNthFromTop(edges, 0);
 	}
 
-	/*DetectedEdge*/
+	// DetectedEdge
 	private static int selectRoiTwoLargestLeft(final List<DetectedEdge> edges) {
 		if (edges.size() < 2) {
+			// In case only one ROI has been found..
 			return -1;
-		} // In case only one ROI has been found..
+		}
 		final int[] twoBones = twoLargestBonesRetainOrderDetectedEdges(edges);
 		final Collection<DetectedEdge> tempEdges = new Vector<>();
 		for (final int twoBone : twoBones) {
 			tempEdges.add(edges.get(twoBone));
 		}
-
 		final int tempSelection = selectRoiLeftmostBone(tempEdges);
 		return twoBones[tempSelection];
 	}
 
-	/*DetectedEdge*/
+	// DetectedEdge
 	private static int selectRoiTwoLargestRight(final List<DetectedEdge> edges) {
 		if (edges.size() < 2) {
 			return -1;
@@ -873,8 +856,8 @@ public abstract class RoiSelector {
 		final Collection<Integer> jiit = new Vector<>();
 		iit.add(i);
 		jiit.add(j);
-		double direction = 0; // begin by advancing right. Positive angles rotate
-													// the direction clockwise.
+		// begin by advancing right. Positive angles rotate the direction clockwise.
+		double direction = 0;
 		double previousDirection;
 		final int initI;
 		final int initJ;
@@ -883,14 +866,16 @@ public abstract class RoiSelector {
 		while (true) {
 			int counter = 0;
 			previousDirection = direction;
-			/*Handle going out of bounds by considering out of bounds to be  less than threshold*/
+			// Handle going out of bounds by considering out of bounds to be less than
+			// threshold
 			if ((i + ((int) Math.round(Math.cos(direction)))) >= 0 && (i + ((int) Math
 				.round(Math.cos(direction))) < width) && (j + ((int) Math.round(Math
 					.sin(direction))) >= 0) && (j + ((int) Math.round(Math.sin(
 						direction))) < height) && scaledImage[i + ((int) Math.round(Math
 							.cos(direction))) + (j + ((int) Math.round(Math.sin(
 								direction)))) * width] > threshold)
-			{// Rotate counter clockwise
+			{
+				// Rotate counter clockwise
 				while (counter < 8 && i + ((int) Math.round(Math.cos(direction -
 					Math.PI / 4.0))) >= 0 && i + ((int) Math.round(Math.cos(direction -
 						Math.PI / 4.0))) < width && j + ((int) Math.round(Math.sin(
@@ -907,7 +892,8 @@ public abstract class RoiSelector {
 					}
 				}
 			}
-			else {// Rotate clockwise
+			else {
+				// Rotate clockwise
 				while (counter < 8 && (i + ((int) Math.round(Math.cos(
 					direction))) < 0 || i + ((int) Math.round(Math.cos(
 						direction))) >= width || j + ((int) Math.round(Math.sin(
@@ -952,12 +938,12 @@ public abstract class RoiSelector {
 				jiit.add(j);
 
 			}
-			direction -= Math.PI / 2.0; // Keep steering counter clockwise not to miss
-																	// single pixel structs...
+			// Keep steering counter clockwise not to miss single pixel structs...
+			direction -= Math.PI / 2.0;
 		}
 	}
 
-	/*DetectedEdge*/
+	// DetectedEdge
 	private static int[] twoLargestBonesRetainOrderDetectedEdges(
 		final List<DetectedEdge> edges)
 	{
@@ -981,6 +967,39 @@ public abstract class RoiSelector {
 		twoLongest[1] = counter;
 		Arrays.sort(twoLongest);
 		return twoLongest;
+	}
+
+	byte[] dilate(final byte[] data, final byte dilateVal, final byte min,
+		final byte temp)
+	{
+		// Dilate algorithm
+		// Best dilate by one solution taken from
+		// http://ostermiller.org/dilate_and_erode.html
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				if (data[i * width + j] == dilateVal) {
+					if (i > 0 && data[(i - 1) * width + j] == min) {
+						data[(i - 1) * width + j] = temp;
+					}
+					if (j > 0 && data[(i) * width + j - 1] == min) {
+						data[i * width + j - 1] = temp;
+					}
+					if (i + 1 < height && data[(i + 1) * width + j] == min) {
+						data[(i + 1) * width + j] = temp;
+					}
+					if (j + 1 < width && data[i * width + j + 1] == min) {
+						data[i * width + j + 1] = temp;
+					}
+				}
+			}
+		}
+		for (int i = 0; i < data.length; i++) {
+			if (data[i] == temp) {
+				// Set to proper value here...
+				data[i] = dilateVal;
+			}
+		}
+		return data;
 	}
 
 	/*A function to get rid of the measurement tube used at UKK-institute
@@ -1050,35 +1069,37 @@ public abstract class RoiSelector {
 		return sleeve;
 	}
 
-	void erode(final byte[] data) {
+	byte[] erode(final byte[] data) {
 		// Erode algorithm
 		// Modified from the best dilate by one solution taken from
 		// http://ostermiller.org/dilate_and_erode.html
-		for (int i = 0; i < height; i++) {
-			for (int j = 0; j < width; j++) {
+		for (int i = 1; i < height - 1; i++) {
+			for (int j = 1; j < width - 1; j++) {
 				if (data[i * width + j] > 0) {
-					if (i > 0 && data[(i - 1) * width + j] == 0 || j > 0 && data[(i) *
-						width + j - 1] == 0 || i + 1 < height && data[(i + 1) * width +
-							j] == 0 || j + 1 < width && data[(i) * width + j + 1] == 0)
+					if (data[(i - 1) * width + j] == 0 || data[i * width + j - 1] == 0 ||
+						data[(i + 1) * width + j] == 0 || data[i * width + j + 1] == 0)
 					{
+						// Erode the pixel if any of the neighborhood pixels is background
 						data[i * width + j] = -1;
-					} // Erode the pixel if any of the neighborhood pixels is background
+					}
 				}
 			}
 		}
 		for (int i = 0; i < data.length; i++) {
 			data[i] = (byte) Math.max(0, data[i]);
 		}
+		return data;
 	}
 
-	/*DetectedEdges*/
+	// DetectedEdges
 	Vector<Object> getSieve(final double[] tempScaledImage,
 		final double boneThreshold, final String roiChoice,
 		final boolean guessStacked, final boolean stacked, final boolean guessFlip,
 		final boolean allowCleaving) throws ExecutionException
 	{
+		// Trace bone edges
 		final Vector<?> results = findEdge(tempScaledImage, boneThreshold,
-			allowCleaving); // Trace bone edges
+			allowCleaving);
 		result = (byte[]) results.get(0);
 		@SuppressWarnings("unchecked")
 		final List<DetectedEdge> edges = (Vector<DetectedEdge>) results.get(1);
@@ -1091,7 +1112,7 @@ public abstract class RoiSelector {
 					". Set the Thresholds between these values", new Throwable());
 		}
 
-		/*Select correct bone outline*/
+		// Select correct bone outline
 		int selection = 0;
 		final int choiceIndex = Arrays.asList(details.choiceLabels).indexOf(
 			roiChoice);
@@ -1157,7 +1178,7 @@ public abstract class RoiSelector {
 				1)) > stackedThreshold;
 		}
 
-		/*Try to guess whether to flip the distribution*/
+		// Try to guess whether to flip the distribution
 		if (guessFlip) {
 			if (details.guessLarger) {
 				details.flipDistribution = guessFlipLarger(edges, stacked);

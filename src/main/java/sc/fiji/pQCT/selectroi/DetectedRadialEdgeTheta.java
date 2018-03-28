@@ -28,6 +28,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package sc.fiji.pQCT.selectroi;
 
+/** @deprecated Class is unused. */
+@Deprecated
 public class DetectedRadialEdgeTheta implements
 	Comparable<DetectedRadialEdgeTheta>
 {

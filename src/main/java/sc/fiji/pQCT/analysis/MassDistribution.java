@@ -75,8 +75,8 @@ public class MassDistribution {
 		// Calculate radii in polar coordinate system originating from bone marrow
 		// center of mass
 		final double rIncrement = 0.1;
-		// Finding endocortical and pericortical
-		// borders uMath.sing polar coordinates
+		// Finding endocortical and pericortical borders uMath.sing polar
+		// coordinates
 		for (int et = 0; et < 360; et++) {
 			final double theta = Math.PI / 180.0 * et;
 			bMC[et] = 0;
@@ -99,9 +99,8 @@ public class MassDistribution {
 			{
 				// Calculate bMC rho*dV, dV=dA*slice_thickness
 				// dA=pi*((r(et)*resolution)^2-((r(et)-0.1)*resolution)^2),
-				// slice_thickness = 1 mm
-				// (could be set to actual slice thickness, but makes no
-				// difference for comparisons -> 1 mm is used bMD divided by
+				// slice_thickness = 1 mm (could be set to actual slice thickness, but
+				// makes no difference for comparisons -> 1 mm is used bMD divided by
 				// 1000, because unit is mg/cm3 and area is mm2
 				final double tempBMD = roi.scaledImage[(int) (boneCenter[0] + R * Math
 					.cos(theta)) + ((int) ((boneCenter[1] + R * Math.sin(theta))) *

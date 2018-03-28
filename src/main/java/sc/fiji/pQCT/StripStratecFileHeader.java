@@ -47,7 +47,7 @@ public class StripStratecFileHeader implements PlugIn {
 	@Override
 	public void run(final String arg) {
 		final GenericDialog dialog = new GenericDialog("Strip Stratec Header");
-		/*MeasInfo,PatBirth,PatMenoAge,PatName,PatTitle&Comment*/
+		// MeasInfo,PatBirth,PatMenoAge,PatName,PatTitle&Comment
 		dialog.addCheckbox("Strip_MeasInfo", false);
 		dialog.addCheckbox("Strip_PatBirth", false);
 		dialog.addCheckbox("Strip_PatMenoAge", false);
@@ -61,7 +61,6 @@ public class StripStratecFileHeader implements PlugIn {
 		if (!dialog.wasOKed()) {
 			return;
 		}
-
 		final boolean[] toStrip = new boolean[5];
 		for (int i = 0; i < toStrip.length; ++i) {
 			toStrip[i] = dialog.getNextBoolean();
@@ -77,7 +76,6 @@ public class StripStratecFileHeader implements PlugIn {
 			IJ.error("Input file didn't exist");
 			return;
 		}
-
 		try {
 			stripFile(fileIn, fileOut, toStrip);
 		}
@@ -106,13 +104,11 @@ public class StripStratecFileHeader implements PlugIn {
 		writeFile(fileNameOut, fileData);
 	}
 
-	// Writing dummy header containing sufficient details for
-	// Distribution_Analysis imageJ plugin, might not suffice for Geanie or
-	// Stractec software
-	private static void stripHeader(final byte[] data,
-		final boolean[] toStrip)
-	{
-		/*MeasInfo,PatBirth,PatMenoAge,PatName,PatTitle&Comment*/
+	// Writing dummy header containing sufficient details for the
+	// PqctAnalysis imageJ plugin, might not suffice for Geanie or
+	// Stratec software
+	private static void stripHeader(final byte[] data, final boolean[] toStrip) {
+		// MeasInfo,PatBirth,PatMenoAge,PatName,PatTitle&Comment
 		final int[] fromIndices = { 662, 1091, 1095, 1099, 1141 };
 		final int[] stripLengths = { 324, 4, 4, 41, 124 };
 		for (int s = 0; s < fromIndices.length; ++s) {

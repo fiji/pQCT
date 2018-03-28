@@ -28,7 +28,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package sc.fiji.pQCT.analysis;
 
-import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.IntStream.range;
 
 import java.util.Arrays;
@@ -36,7 +35,6 @@ import java.util.Collections;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import sc.fiji.pQCT.io.ImageAndAnalysisDetails;
 import sc.fiji.pQCT.selectroi.DetectedEdge;
@@ -76,9 +74,9 @@ public class DetermineAlpha {
 			final double[] csmiValues = csmi(tempCsmiSieve, roi.width, roi.height);
 			determineMomentAlpha(csmiValues);
 		}
-		/*Rotation according to the furthest point*/
+		// Rotation according to the furthest point
 		if (choice.equals(labels[1])) {
-			/*Calculate alpha from periosteal radii*/
+			// Calculate alpha from periosteal radii
 			final double[] marrowCenter = new double[2];
 			final IntStream iValues;
 			final IntStream jValues;
@@ -107,8 +105,7 @@ public class DetermineAlpha {
 			}
 			final double greatestR = Arrays.stream(sumRadii).max().orElse(0);
 			int index = 0;
-			while (Double.compare(sumRadii[index], greatestR) != 0)
-			{
+			while (Double.compare(sumRadii[index], greatestR) != 0) {
 				++index;
 			}
 			final double x = edge.iit.get(index) - marrowCenter[0];
@@ -116,9 +113,9 @@ public class DetermineAlpha {
 			alpha = Math.PI - Math.atan2(y, x);
 		}
 
-		/*Rotate unselected bone to right*/
+		// Rotate unselected bone to right
 		if (choice.equals(labels[3]) || choice.equals(labels[4])) {
-			/*Create temp roi for rotating using rotationThreshold..*/
+			// Create temp roi for rotating using rotationThreshold..
 			final SelectROI tempRoi;
 			try {
 				tempRoi = new SelectROI(roi.scaledImageData, roi.details, roi.imp,
@@ -128,7 +125,7 @@ public class DetermineAlpha {
 				e.printStackTrace();
 				return;
 			}
-			/*Find the second biggest bone (could be bigger than the selected roi...*/
+			// Find the second biggest bone (could be bigger than the selected roi...
 			final int[] twoBones = RoiSelector.twoLargestBonesDetectedEdges(
 				tempRoi.edges);
 			final int otherBoneSelection;
@@ -138,7 +135,7 @@ public class DetermineAlpha {
 			else {
 				otherBoneSelection = twoBones[0];
 			}
-			/*Fill a sieve with a second bone and acquire coordinates...*/
+			// Fill a sieve with a second bone and acquire coordinates...
 			final Vector<Integer> sRoiI = tempRoi.edges.get(otherBoneSelection).iit;
 			final Vector<Integer> sRoiJ = tempRoi.edges.get(otherBoneSelection).jiit;
 			final byte[] secondBoneSieve = tempRoi.fillSieve(sRoiI, sRoiJ,
@@ -167,12 +164,12 @@ public class DetermineAlpha {
 				roi.pixelSpacing;
 		}
 
-		/*Manual rotation*/
+		// Manual rotation
 		if (details.manualRotation) {
 			alpha = details.manualAlpha;
 		}
 
-		/*Flip distribution*/
+		// Flip distribution
 		if (details.flipDistribution) {
 			rotationCorrection = -rotationCorrection;
 		}
@@ -184,8 +181,13 @@ public class DetermineAlpha {
 		// axes with X and Y axes
 		pind = rotateIndex(rotationIndex);
 
-		pindColor = details.flipDistribution ? rotateIndex(rotationIndex)
-			: rotateIndex(-rotationIndex);
+		if (details.flipDistribution) {
+			pindColor = rotateIndex(rotationIndex);
+		}
+		else {
+			pindColor = rotateIndex(-rotationIndex);
+		}
+
 	}
 
 	private static double[] calculateCenter(final byte[] sieve, final int width,
@@ -257,15 +259,14 @@ public class DetermineAlpha {
 			moment * Math.sin(2 * (-alpha));
 		vali2 = (ymax + xmax) / 2 - (ymax - xmax) / 2 * Math.cos(2 * (-alpha)) +
 			moment * Math.sin(2 * (-alpha));
-		// The according to Imax/Imin alpha may align rotation axis
-		// corresponding
-		// to maximal CSMI with either horizontal
-		// or vertical axis, whichever rotation is smaller...
+		// The according to Imax/Imin alpha may align rotation axis corresponding to
+		// maximal CSMI with either horizontal or vertical axis, whichever rotation
+		// is smaller...
 		// Always rotate towards horizontal axis... maximal bending axis will be
 		// aligned with horizontal axis
 		// Note that e.g. tibial mid-shaft rotation is completely different if
 		// only tibia or if both tibia and fibula
-		// are consireder!!!
+		// are considered!!!
 		if (vali1 > vali2) {
 			if (alpha < 0) {
 				alpha = alpha + Math.PI / 2.0;
@@ -277,13 +278,31 @@ public class DetermineAlpha {
 	}
 
 	private Vector<Integer> rotateIndex(final int rotationAngle) {
-		final int initialIndex = 360 - Math.abs(rotationAngle);
-		final Vector<Integer> rotateIndexVector = Stream.iterate(initialIndex,
-			i -> i++ % 360).limit(360).collect(toCollection(Vector::new));
+		final int initialIndex;
+		final Vector<Integer> rotateIndexVector = new Vector<>();
+		if (rotationAngle >= 0) {
+			initialIndex = 360 - rotationAngle;
+		}
+		else {
+			initialIndex = -rotationAngle;
+		}
+		int inde;
+		inde = initialIndex;
+		while (inde < 360) {
+			rotateIndexVector.add(inde);
+			++inde;
+		}
+		inde = 0;
+		while (inde < initialIndex) {
+			rotateIndexVector.add(inde);
+			++inde;
+		}
+
 		/*Flip rotateIndexVector, for e.g. comparing left to right*/
 		if (details.flipDistribution) {
 			Collections.reverse(rotateIndexVector);
 		}
 		return rotateIndexVector;
 	}
+
 }

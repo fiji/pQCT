@@ -87,7 +87,7 @@ public class LiveWirePlugin implements PlugIn, MouseListener,
 		if (currentSlice != e.getValue()) {
 			final int previousSlice = currentSlice;
 			currentSlice = e.getValue();
-			/* Finalize ROI in the previous imp */
+			// Finalize ROI in the previous imp
 			imp.setSlice(previousSlice);
 			imp.setPosition(previousSlice);
 			finalizeRoi();
@@ -134,17 +134,18 @@ public class LiveWirePlugin implements PlugIn, MouseListener,
 		if (polygon.npoints <= 0) {
 			return;
 		}
-		/* Visualize the segment to be added in real-time */
+		// Visualize the segment to be added in real-time
 		final int screenX = e.getX();
 		final int screenY = e.getY();
 		final int x = canvas.offScreenX(screenX);
 		final int y = canvas.offScreenY(screenY);
 		final int[] pX;
 		final int[] pY;
-		/* If shift is pressed, visualize adding a straight line */
+
 		if ((e.getModifiersEx() & InputEvent.SHIFT_MASK) != 0 || (e
 			.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0)
 		{
+			// If shift is pressed, visualize adding a straight line
 			pX = new int[polygon.npoints + 1];
 			pY = new int[polygon.npoints + 1];
 			for (int i = 0; i < polygon.npoints; ++i) {
@@ -155,7 +156,7 @@ public class LiveWirePlugin implements PlugIn, MouseListener,
 			pY[polygon.npoints] = y;
 		}
 		else {
-			/*Visualize adding livewire segment*/
+			// Visualize adding livewire segment
 			int[][] fromSeedToCursor;
 			while ((fromSeedToCursor = lwc.returnPath(x, y)) == null) {}
 			pX = new int[polygon.npoints + fromSeedToCursor.length];
@@ -169,7 +170,7 @@ public class LiveWirePlugin implements PlugIn, MouseListener,
 				pY[polygon.npoints + i] = fromSeedToCursor[i][1];
 			}
 		}
-		/* Add the ROI */
+		// Add the ROI
 		imp.setRoi(new PolygonRoi(pX, pY, pX.length, Roi.POLYLINE), true);
 	}
 
@@ -184,14 +185,14 @@ public class LiveWirePlugin implements PlugIn, MouseListener,
 	@Override
 	public void mouseReleased(final MouseEvent e) {
 		if (e.getClickCount() >= 2) {
-			/* Ignore second and further clicks of a double click */
+			// Ignore second and further clicks of a double click
 			return;
 		}
 		final int screenX = e.getX();
 		final int screenY = e.getY();
 		final int x = canvas.offScreenX(screenX);
 		final int y = canvas.offScreenY(screenY);
-		/*Backpedal polygon to the previous one if control is pressed*/
+		// Backpedal polygon to the previous one if control is pressed
 		if (!polygons.isEmpty() && ((e.getModifiersEx() &
 			InputEvent.CTRL_MASK) != 0 || (e.getModifiersEx() &
 				InputEvent.CTRL_DOWN_MASK) != 0))
@@ -211,26 +212,26 @@ public class LiveWirePlugin implements PlugIn, MouseListener,
 			lwc.setSeed(pX[pX.length - 1], pY[pX.length - 1]);
 		}
 		else {
-			/*Add a new segment to the polygon*/
+			// Add a new segment to the polygon
 			if (polygon.npoints > 0) {
-				/*Store a copy of the previous polygon*/
+				// Store a copy of the previous polygon
 				final int[] tX = new int[polygon.npoints];
 				final int[] tY = new int[polygon.npoints];
 				for (int i = 0; i < polygon.npoints; ++i) {
 					tX[i] = polygon.xpoints[i];
 					tY[i] = polygon.ypoints[i];
 				}
-				polygons.add(new Polygon(tX, tY,
-					tX.length)); /*Store the previous polygon*/
-				/*If shift is pressed, add a straight line*/
+				// Store the previous polygon
+				polygons.add(new Polygon(tX, tY, tX.length));
+				// If shift is pressed, add a straight line
 				if ((e.getModifiersEx() & InputEvent.SHIFT_MASK) != 0 || (e
 					.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0)
 				{
-					/*Add a straight line*/
+					// Add a straight line
 					polygon.addPoint(x, y);
 				}
 				else {
-					/*Add a livewire segment*/
+					// Add a livewire segment
 					int[][] fromSeedToCursor;
 					while ((fromSeedToCursor = lwc.returnPath(x, y)) == null) {}
 					final int[] pX = new int[polygon.npoints + fromSeedToCursor.length];
@@ -245,7 +246,7 @@ public class LiveWirePlugin implements PlugIn, MouseListener,
 					}
 					polygon = new Polygon(pX, pY, pX.length);
 				}
-				/*Get, and set the ROI*/
+				// Get, and set the ROI
 				roi = new PolygonRoi(polygon, Roi.POLYLINE);
 				imp.setRoi(roi, true);
 			}
@@ -268,7 +269,7 @@ public class LiveWirePlugin implements PlugIn, MouseListener,
 		}
 		final int previousSlice = currentSlice;
 		currentSlice += rotation;
-		/* Finalize ROI in the previous imp */
+		// Finalize ROI in the previous imp
 		imp.setSlice(previousSlice);
 		imp.setPosition(previousSlice);
 		finalizeRoi();
@@ -308,7 +309,7 @@ public class LiveWirePlugin implements PlugIn, MouseListener,
 		IJ.log("Init LW " + width + " h " + height);
 		initLW();
 
-		/* Pop up Roi Manager */
+		// Pop up Roi Manager
 		rMan = RoiManager.getInstance();
 		if (RoiManager.getInstance() == null) {
 			rMan = new RoiManager();
@@ -329,22 +330,22 @@ public class LiveWirePlugin implements PlugIn, MouseListener,
 		polygon.addPoint(polygon.xpoints[0], polygon.ypoints[0]);
 		/*Create the ROI*/
 		roi = new PolygonRoi(polygon, Roi.POLYGON);
-		/*Set roi color to differentiate ROIs from each other*/
+		// Set roi color to differentiate ROIs from each other
 		final int colorInd = over.size();
 		final double angle = 2.0 * Math.PI * colorInd / 10.0;
 		//@formatter:off
 		final double[] colors = {
-				0.5 + 0.5 * Math.sin(2.0 * Math.PI * (colorInd - 5) / 10.0), /*R*/
-				0.5 + 0.5 * Math.cos(angle), /*G*/
-				0.5 + 0.5 * Math.sin(angle) /*B*/
+				0.5 + 0.5 * Math.sin(2.0 * Math.PI * (colorInd - 5) / 10.0), // R
+				0.5 + 0.5 * Math.cos(angle), // G
+				0.5 + 0.5 * Math.sin(angle) // B
 		};
 		//@formatter:on
 		roi.setStrokeColor(new Color((float) colors[0], (float) colors[1],
 			(float) colors[2]));
-		/*Add the roi to an overlay, and set the overlay active*/
+		// Add the roi to an overlay, and set the overlay active
 		imp.setRoi(roi, true);
 		over.add(roi);
-		/* Add the segmented area to the roiManager */
+		// Add the segmented area to the roiManager
 		rMan.addRoi(roi);
 	}
 

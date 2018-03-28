@@ -28,7 +28,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package sc.fiji.pQCT.analysis;
 
-import java.util.Arrays;
+import static java.util.Arrays.stream;
+
 import java.util.List;
 import java.util.Vector;
 
@@ -37,7 +38,6 @@ import sc.fiji.pQCT.selectroi.SelectROI;
 
 public class ConcentricRingAnalysis {
 
-	private final double pixelSpacing;
 	public final int height;
 	public final int width;
 	public final double[] boneCenter;
@@ -46,6 +46,7 @@ public class ConcentricRingAnalysis {
 	public final double[] rU = new double[360];
 	public final double[] pericorticalRadii;
 	public final Vector<double[]> BMDs = new Vector<>();
+	private final double pixelSpacing;
 	private final double sectorWidth;
 	private final double divisions;
 	// Variables for moment calculations
@@ -77,10 +78,11 @@ public class ConcentricRingAnalysis {
 		}
 		boneCenter[0] = boneCenter[0] / points;
 		boneCenter[1] = boneCenter[1] / points;
-		calculateRadii();
-		rotateResults();
 		final int size = (int) (360.0 / sectorWidth);
 		pericorticalRadii = new double[size];
+		calculateRadii();
+		rotateResults();
+
 	}
 
 	private void calculateRadii() {
@@ -145,8 +147,8 @@ public class ConcentricRingAnalysis {
 	}
 
 	private void rotateResults() {
-		final double[] pRad = Arrays.stream(rU).map(r -> r * pixelSpacing)
-			.toArray();
+		// Calculate pericortical radii
+		final double[] pRad = stream(rU).map(r -> r *= pixelSpacing).toArray();
 		final int size = (int) (360.0 / sectorWidth);
 		for (int div = 0; div < divisions; ++div) {
 			BMDs.add(new double[size]);
@@ -156,12 +158,13 @@ public class ConcentricRingAnalysis {
 		// Calculate the division and sector values of vBMD
 		for (int pp = 0; pp < size; pp++) {
 			for (int dd = 0; dd < (int) sectorWidth; dd++) {
-				final int index = (int) (pp * sectorWidth + dd);
-				pericorticalRadii[pp] += pRad[pind.get(index)] / sectorWidth;
+				final int index = pind.get((int) (pp * sectorWidth + dd));
+				pericorticalRadii[pp] += pRad[index] / sectorWidth;
 				for (int div = 0; div < divisions; ++div) {
-					BMDs.get(div)[pp] += bMDJ.get(div)[pind.get(index)] / sectorWidth;
+					BMDs.get(div)[pp] += bMDJ.get(div)[index] / sectorWidth;
 				}
 			}
 		}
+
 	}
 }

@@ -127,14 +127,14 @@ public class ReadStratecFile extends ImagePlus implements PlugIn {
 			return;
 		}
 		try (final DataInputStream dataInputStream = new DataInputStream(
-				new BufferedInputStream(new FileInputStream(file))))
+			new BufferedInputStream(new FileInputStream(file))))
 		{
 			// Allocate memory for reading the file into memory
 			final byte[] data = new byte[bytes];
 			// Read the data to memory
 			dataInputStream.read(data, 0, bytes);
 			final ByteBuffer buffer = ByteBuffer.wrap(data).order(
-					ByteOrder.LITTLE_ENDIAN);
+				ByteOrder.LITTLE_ENDIAN);
 			readHeader(buffer);
 			readImage(buffer, path);
 		}
@@ -144,7 +144,7 @@ public class ReadStratecFile extends ImagePlus implements PlugIn {
 	}
 
 	private void readHeader(final ByteBuffer buffer)
-			throws UnsupportedDataTypeException
+		throws UnsupportedDataTypeException
 	{
 		Device = getNByteString(buffer, 1050);
 		if (!Device.toLowerCase().contains(".typ")) {
@@ -167,8 +167,8 @@ public class ReadStratecFile extends ImagePlus implements PlugIn {
 
 	private void readImage(final ByteBuffer buffer, final String path) {
 		final ImagePlus tempImage = NewImage.createShortImage(fileName + " " +
-						Double.toString(VoxelSize), PicMatrixX, PicMatrixY, 1,
-				NewImage.FILL_BLACK);
+			Double.toString(VoxelSize), PicMatrixX, PicMatrixY, 1,
+			NewImage.FILL_BLACK);
 		setImage(tempImage.getImage());
 		setProcessor(fileName, tempImage.getProcessor());
 		setProperties(path);
@@ -200,19 +200,19 @@ public class ReadStratecFile extends ImagePlus implements PlugIn {
 
 	private void setProperties(final String directory) {
 		final String[] propertyNames = { "File Name", "File Path", "Pixel Spacing",
-				"ObjLen", "MeasInfo", "Acquisition Date", "Device", "PatMeasNo", "PatNo",
-				"Patient's Birth Date", "Patient's Name", "Patient ID", "PicX0", "PicY0",
-				"Width", "Height", "Stratec File" };
+			"ObjLen", "MeasInfo", "Acquisition Date", "Device", "PatMeasNo", "PatNo",
+			"Patient's Birth Date", "Patient's Name", "Patient ID", "PicX0", "PicY0",
+			"Width", "Height", "Stratec File" };
 		final String[] propertyValues = { fileName, directory, Double.toString(
-				VoxelSize), Double.toString(ObjLen), MeasInfo, Long.toString(MeasDate),
-				Device, Integer.toString(PatMeasNo), Long.toString(PatNo), Long.toString(
+			VoxelSize), Double.toString(ObjLen), MeasInfo, Long.toString(MeasDate),
+			Device, Integer.toString(PatMeasNo), Long.toString(PatNo), Long.toString(
 				PatBirth), PatName, PatID, Integer.toString(PicX0), Integer.toString(
-				PicY0), Integer.toString(PicMatrixX), Integer.toString(PicMatrixY),
-				"1" };
+					PicY0), Integer.toString(PicMatrixX), Integer.toString(PicMatrixY),
+			"1" };
 		final StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < propertyNames.length; ++i) {
 			builder.append(propertyNames[i]).append(": ").append(propertyValues[i])
-					.append("\n");
+				.append("\n");
 		}
 		properties = builder.toString();
 		setProperty("Info", properties);

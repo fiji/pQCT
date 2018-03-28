@@ -48,7 +48,7 @@ public class SelectROI extends RoiSelector {
 		final double boneThreshold, final boolean setRoi) throws ExecutionException
 	{
 		super(dataIn, detailsIn, imp);
-		/*Select ROI and set everything else than the roi to minimum*/
+		// Select ROI and set everything else than the roi to minimum
 		cortexROI = new double[width * height];
 		cortexRoiI = new Vector<>();
 		cortexRoiJ = new Vector<>();
@@ -58,7 +58,6 @@ public class SelectROI extends RoiSelector {
 		boneMarrowRoiJ = new Vector<>();
 		Roi ijROI = imp.getRoi();
 		final double[] tempScaledImage = scaledImage.clone();
-		// scaledImage.clone();
 		if (ijROI != null && details.manualRoi) {
 			// Set pixels outside the manually selected ROI to zero
 			for (int j = 0; j < height; j++) {
@@ -86,7 +85,7 @@ public class SelectROI extends RoiSelector {
 		final Vector<DetectedEdge> boneEdges = (Vector<DetectedEdge>) boneMasks.get(
 			2);
 		selection = (Integer) boneMasks.get(3);
-		/*Add the roi to the image*/
+		// Add the roi to the image
 		if (setRoi) {
 			final int[] xcoordinates = new int[boneEdges.get(selection).iit.size()];
 			final int[] ycoordinates = new int[boneEdges.get(selection).iit.size()];
@@ -94,7 +93,8 @@ public class SelectROI extends RoiSelector {
 				xcoordinates[i] = boneEdges.get(selection).iit.get(i);
 				ycoordinates[i] = boneEdges.get(selection).jiit.get(i);
 			}
-			/*Flip the original image prior to adding the ROI, if scaled image is flipped*/
+			// Flip the original image prior to adding the ROI, if scaled image is
+			// flipped
 			if ((details.flipHorizontal || details.flipVertical) && imp
 				.getRoi() != null)
 			{
@@ -117,22 +117,21 @@ public class SelectROI extends RoiSelector {
 		for (int j = 0; j < height; j++) {
 			for (int i = 0; i < width; i++) {
 				final int index = i + j * width;
-				if (sieve[index] <= 0) {
-					cortexROI[index] = minimum;
-					continue;
-				}
-				if (scaledImage[index] < areaThreshold) {
+				if (scaledImage[index] < areaThreshold & sieve[index] > 0) {
 					boneMarrowRoiI.add(i);
 					boneMarrowRoiJ.add(j);
 				}
-				else if (scaledImage[index] >= areaThreshold) {
+				if (scaledImage[index] >= areaThreshold & sieve[index] > 0) {
 					cortexAreaRoiI.add(i);
 					cortexAreaRoiJ.add(j);
 				}
-				else if (scaledImage[index] >= BMDthreshold) {
+				if (scaledImage[index] >= BMDthreshold & sieve[index] > 0) {
 					cortexROI[index] = scaledImage[index];
 					cortexRoiI.add(i);
 					cortexRoiJ.add(j);
+				}
+				else {
+					cortexROI[index] = minimum;
 				}
 			}
 		}

@@ -32,12 +32,14 @@ import java.util.Vector;
 
 public class DetectedEdge implements Comparable<DetectedEdge> {
 
-	public final Vector<Integer> iit; // indexes for x-coordinates
-	public final Vector<Integer> jiit; // indexes for y-coordinates
+	public final Vector<Integer> iit; // indices for x-coordinates
+	public final Vector<Integer> jiit; // indices for y-coordinates
 	public final int area;
 	public final int length;
 
-	DetectedEdge(final Vector<Integer> iit, final Vector<Integer> jiit, final int area) {
+	DetectedEdge(final Vector<Integer> iit, final Vector<Integer> jiit,
+		final int area)
+	{
 		this.iit = iit;
 		this.jiit = jiit;
 		length = iit.size();
@@ -45,12 +47,12 @@ public class DetectedEdge implements Comparable<DetectedEdge> {
 	}
 
 	@Override
-	public boolean equals(final Object o) {
-		return o instanceof DetectedEdge && compareTo((DetectedEdge) o) == 0;
+	public int compareTo(final DetectedEdge o) {
+		return Double.compare(area, o.area);
 	}
 
 	@Override
-	public int compareTo(final DetectedEdge o) {
-	    return Double.compare(area, o.area);
+	public boolean equals(final Object o) {
+		return o instanceof DetectedEdge && compareTo((DetectedEdge) o) == 0;
 	}
 }

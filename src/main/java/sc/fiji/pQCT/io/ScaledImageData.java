@@ -62,10 +62,12 @@ public class ScaledImageData {
 		else {
 			scaledImage = medianFilter(unFiltered, width, height, filterSize); // Median
 		}
-		if (flipHorizontal) {// Flip the image around the horizontal axis...
+		if (flipHorizontal) {
+			// Flip the image around the horizontal axis...
 			flipHorizontally();
 		}
-		if (flipVertical) {// Flip the image around the horizontal axis...
+		if (flipVertical) {
+			// Flip the image around the horizontal axis...
 			flipVertically();
 		}
 	}
@@ -98,7 +100,8 @@ public class ScaledImageData {
 	private double[] medianFilter(final double[] data, final int width,
 		final int height, final int filterSize)
 	{
-		/*Fill filtered with min value to get the frame from messing up with edge detection*/
+		// Fill filtered with min value to get the frame from messing up with edge
+		// detection
 		final double[] filtered = new double[width * height];
 		Arrays.fill(filtered, minimum);
 		final double[] toMedian = new double[filterSize * filterSize];
