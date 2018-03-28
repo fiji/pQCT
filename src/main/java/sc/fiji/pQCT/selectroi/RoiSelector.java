@@ -1076,11 +1076,12 @@ public abstract class RoiSelector {
 		for (int i = 1; i < height - 1; i++) {
 			for (int j = 1; j < width - 1; j++) {
 				if (data[i * width + j] > 0) {
-					if (data[(i - 1) * width + j] == 0 | data[(i) * width + j - 1] == 0 |
-						data[(i + 1) * width + j] == 0 | data[(i) * width + j + 1] == 0)
+					if (data[(i - 1) * width + j] == 0 || data[i * width + j - 1] == 0 ||
+						data[(i + 1) * width + j] == 0 || data[i * width + j + 1] == 0)
 					{
+						// Erode the pixel if any of the neighborhood pixels is background
 						data[i * width + j] = -1;
-					} // Erode the pixel if any of the neighborhood pixels is background
+					}
 				}
 			}
 		}

@@ -269,8 +269,8 @@ public class DistributionAnalysis {
 			for (int j = 1; j < width - 1; j++) {
 				final int index = i * width + j;
 				if (data[index] > bgVal) {
-					if (data[(i - 1) * width + j] == bgVal | data[(i) * width + j -
-						1] == bgVal | data[(i + 1) * width + j] == bgVal | data[(i) *
+					if (data[(i - 1) * width + j] == bgVal || data[(i) * width + j -
+						1] == bgVal || data[(i + 1) * width + j] == bgVal || data[(i) *
 							width + j + 1] == bgVal)
 					{
 						// Erode the pixel if any of the neighborhood pixels is background
@@ -297,7 +297,7 @@ public class DistributionAnalysis {
 		while (true) {
 			final int index = (int) (x + expandedR * cos) + (((int) (y + expandedR *
 				sin)) * width);
-			if (roi[index] >= threshold | expandedR >= maxR) {
+			if (roi[index] >= threshold || expandedR >= maxR) {
 				break;
 			}
 			expandedR += 0.1;
@@ -318,7 +318,7 @@ public class DistributionAnalysis {
 				expandedR + 2.0, expandedR + 3.0, expandedR + 4.0, expandedR + 6.0 };
 			final int[] indices = stream(radii).mapToInt(r -> (int) ((x + r * cos) +
 				((int) (y + r * sin)) * width)).toArray();
-			if (stream(indices).noneMatch(i -> roi[i] > threshold) |
+			if (stream(indices).noneMatch(i -> roi[i] > threshold) ||
 				expandedR >= maxR)
 			{
 				break;
