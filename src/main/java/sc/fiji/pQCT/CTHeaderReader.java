@@ -35,6 +35,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 import javax.activation.UnsupportedDataTypeException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 class CTHeaderReader {
 
@@ -50,8 +52,12 @@ class CTHeaderReader {
 
 	private void readHeader(final DataInputStream input) throws IOException {
 		input.skipBytes(PERCENT_OFFSET);
-		percent = input.readDouble();
-		input.skipBytes(SITE_LENGTH_OFFSET - PERCENT_OFFSET);
+		byte[] temp = new byte[8];
+		input.read(temp);
+		ByteBuffer tempbb = ByteBuffer.wrap(temp);
+		tempbb  = tempbb.order(ByteOrder.LITTLE_ENDIAN);
+		percent = tempbb.getDouble();
+		input.skipBytes(SITE_LENGTH_OFFSET - PERCENT_OFFSET-8);
 		final int siteLength = input.readByte();
 		final byte[] siteBytes = new byte[siteLength];
 		input.read(siteBytes, 0, siteLength);
