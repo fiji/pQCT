@@ -14,7 +14,7 @@
     <groupId>sc.fiji</groupId>
     <!-- Name needs an underscore to be recognized as a plugin -->
     <artifactId>pQCT_</artifactId>
-    <version>3.0.0</version>
+    <version>3.0.1-SNAPSHOT</version>
 
     <name>pQCT tools</name>
     <description>Tools for Stratec pQCT images</description>
