@@ -18,7 +18,7 @@
 
     <name>pQCT tools</name>
     <description>Tools for Stratec pQCT images</description>
-    <url>http://imagej.net/pQCT</url>
+    <url>https://imagej.net/pQCT</url>
     <inceptionYear>2017</inceptionYear>
     <organization>
         <name>Fiji</name>
@@ -77,7 +77,7 @@
     <contributors>
         <contributor>
             <name>Mark Hiner</name>
-            <url>http://imagej.net/User:Hinerm</url>
+            <url>https://imagej.net/User:Hinerm</url>
             <properties><id>hinerm</id></properties>
         </contributor>
     </contributors>
