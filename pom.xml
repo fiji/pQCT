@@ -56,25 +56,14 @@
                 <role>lead</role>
                 <role>support</role>
             </roles>
-            <timezone>+0</timezone>
-        </developer>
-        <developer>
-            <id>rimadoma</id>
-            <name>Richard Domander</name>
-            <email>rdomander@rvc.ac.uk</email>
-            <organization>Royal Veterinary College</organization>
-            <organizationUrl>http://www.rvc.ac.uk/</organizationUrl>
-            <roles>
-                <role>developer</role>
-                <role>debugger</role>
-                <role>reviewer</role>
-                <role>support</role>
-                <role>maintainer</role>
-            </roles>
-            <timezone>+0</timezone>
         </developer>
     </developers>
     <contributors>
+        <contributor>
+            <name>Richard Domander</name>
+            <url>https://imagej.net/User:Rdom</url>
+            <properties><id>rimadoma</id></properties>
+        </contributor>
         <contributor>
             <name>Mark Hiner</name>
             <url>https://imagej.net/User:Hinerm</url>
