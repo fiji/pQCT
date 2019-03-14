@@ -48,10 +48,7 @@
         <developer>
             <id>mdoube</id>
             <name>Michael Doube</name>
-            <email>mdoube@rvc.ac.uk</email>
-            <url>http://www.rvc.ac.uk/about/our-people/michael-doube</url>
-            <organization>Royal Veterinary College</organization>
-            <organizationUrl>http://www.rvc.ac.uk/</organizationUrl>
+            <url>https://imagej.net/User:Mdoube</url>
             <roles>
                 <role>lead</role>
                 <role>support</role>
