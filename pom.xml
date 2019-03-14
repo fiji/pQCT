@@ -1,98 +1,97 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.scijava</groupId>
-        <artifactId>pom-scijava</artifactId>
-        <version>22.3.0</version>
-        <relativePath />
-    </parent>
+	<parent>
+		<groupId>org.scijava</groupId>
+		<artifactId>pom-scijava</artifactId>
+		<version>22.3.0</version>
+		<relativePath />
+	</parent>
 
-    <groupId>sc.fiji</groupId>
-    <!-- Name needs an underscore to be recognized as a plugin -->
-    <artifactId>pQCT_</artifactId>
-    <version>3.0.1-SNAPSHOT</version>
+	<groupId>sc.fiji</groupId>
+	<!-- Name needs an underscore to be recognized as a plugin -->
+	<artifactId>pQCT_</artifactId>
+	<version>3.0.1-SNAPSHOT</version>
 
-    <name>pQCT tools</name>
-    <description>Tools for Stratec pQCT images</description>
-    <url>https://imagej.net/pQCT</url>
-    <inceptionYear>2017</inceptionYear>
-    <organization>
-        <name>Fiji</name>
-        <url>https://fiji.sc/</url>
-    </organization>
-    <licenses>
-        <license>
-            <name>Simplified BSD License</name>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-    <mailingLists>
-        <mailingList>
-            <name>Image.sc Forum</name>
-            <archive>https://forum.image.sc/tags/fiji</archive>
-        </mailingList>
-    </mailingLists>
+	<name>pQCT tools</name>
+	<description>Tools for Stratec pQCT images</description>
+	<url>https://imagej.net/pQCT</url>
+	<inceptionYear>2017</inceptionYear>
+	<organization>
+		<name>Fiji</name>
+		<url>https://fiji.sc/</url>
+	</organization>
+	<licenses>
+		<license>
+			<name>Simplified BSD License</name>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
-    <developers>
-        <developer>
-            <id>tjrantal</id>
-            <name>Timo Rantalainen</name>
-            <roles>
-                <role>founder</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>mdoube</id>
-            <name>Michael Doube</name>
-            <url>https://imagej.net/User:Mdoube</url>
-            <roles>
-                <role>lead</role>
-                <role>support</role>
-            </roles>
-        </developer>
-    </developers>
-    <contributors>
-        <contributor>
-            <name>Richard Domander</name>
-            <url>https://imagej.net/User:Rdom</url>
-            <properties><id>rimadoma</id></properties>
-        </contributor>
-        <contributor>
-            <name>Mark Hiner</name>
-            <url>https://imagej.net/User:Hinerm</url>
-            <properties><id>hinerm</id></properties>
-        </contributor>
-    </contributors>
+	<developers>
+		<developer>
+			<id>tjrantal</id>
+			<name>Timo Rantalainen</name>
+			<roles>
+				<role>founder</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>mdoube</id>
+			<name>Michael Doube</name>
+			<url>https://imagej.net/User:Mdoube</url>
+			<roles>
+				<role>lead</role>
+				<role>support</role>
+			</roles>
+		</developer>
+	</developers>
+	<contributors>
+		<contributor>
+			<name>Richard Domander</name>
+			<url>https://imagej.net/User:Rdom</url>
+			<properties><id>rimadoma</id></properties>
+		</contributor>
+		<contributor>
+			<name>Mark Hiner</name>
+			<url>https://imagej.net/User:Hinerm</url>
+			<properties><id>hinerm</id></properties>
+		</contributor>
+	</contributors>
 
-    <scm>
-        <connection>scm:git:git://github.com/fiji/pQCT</connection>
-        <developerConnection>scm:git:git@github.com:fiji/pQCT</developerConnection>
-        <tag>HEAD</tag>
-        <url>https://github.com/bonej-org/BoneJ2</url>
-    </scm>
-    <issueManagement>
-        <system>GitHub Issues</system>
-        <url>https://github.com/fiji/pQCT</url>
-    </issueManagement>
-    <ciManagement>
-        <system>Travis CI</system>
-        <url>https://travis-ci.org/fiji/pQCT</url>
-    </ciManagement>
+	<mailingLists>
+		<mailingList>
+			<name>Image.sc Forum</name>
+			<archive>https://forum.image.sc/tags/fiji</archive>
+		</mailingList>
+	</mailingLists>
 
-    <dependencies>
-        <!-- ImageJ dependencies -->
-        <dependency>
-            <groupId>net.imagej</groupId>
-            <artifactId>ij</artifactId>
-        </dependency>
-    </dependencies>
+	<scm>
+		<connection>scm:git:git://github.com/fiji/pQCT</connection>
+		<developerConnection>scm:git:git@github.com:fiji/pQCT</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/bonej-org/BoneJ2</url>
+	</scm>
+	<issueManagement>
+		<system>GitHub Issues</system>
+		<url>https://github.com/fiji/pQCT</url>
+	</issueManagement>
+	<ciManagement>
+		<system>Travis CI</system>
+		<url>https://travis-ci.org/fiji/pQCT</url>
+	</ciManagement>
 
-    <properties>
-        <license.licenseName>BSD-2-Clause</license.licenseName>
-        <license.copyrightOwners>Timo Rantalainen</license.copyrightOwners>
-    </properties>
+	<properties>
+		<license.licenseName>BSD-2-Clause</license.licenseName>
+		<license.copyrightOwners>Timo Rantalainen</license.copyrightOwners>
+	</properties>
+
+	<dependencies>
+		<!-- ImageJ dependencies -->
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>ij</artifactId>
+		</dependency>
+	</dependencies>
 </project>
