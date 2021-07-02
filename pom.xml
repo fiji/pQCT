@@ -78,13 +78,16 @@
 		<url>https://github.com/fiji/pQCT</url>
 	</issueManagement>
 	<ciManagement>
-		<system>Travis CI</system>
-		<url>https://travis-ci.org/fiji/pQCT</url>
+		<system>GitHub Actions</system>
+		<url>https://github.com/fiji/pQCT/actions</url>
 	</ciManagement>
 
 	<properties>
 		<license.licenseName>BSD-2-Clause</license.licenseName>
 		<license.copyrightOwners>Timo Rantalainen</license.copyrightOwners>
+
+		<!-- NB: Deploy releases to the SciJava Maven repository. -->
+		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 	</properties>
 
 	<dependencies>

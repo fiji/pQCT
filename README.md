@@ -1,4 +1,4 @@
-[![](https://travis-ci.org/fiji/pQCT.svg?branch=master)](https://travis-ci.org/fiji/pQCT)
+[![](https://github.com/fiji/pQCT/actions/workflows/build-main.yml/badge.svg)](https://github.com/fiji/pQCT/actions/workflows/build-main.yml)
 
 # pQCT
 
