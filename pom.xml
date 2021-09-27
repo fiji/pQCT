@@ -31,13 +31,6 @@
 
 	<developers>
 		<developer>
-			<id>tjrantal</id>
-			<name>Timo Rantalainen</name>
-			<roles>
-				<role>founder</role>
-			</roles>
-		</developer>
-		<developer>
 			<id>mdoube</id>
 			<name>Michael Doube</name>
 			<url>https://imagej.net/User:Mdoube</url>
@@ -48,6 +41,11 @@
 		</developer>
 	</developers>
 	<contributors>
+		<contributor>
+			<name>Timo Rantalainen</name>
+			<properties><id>tjrantal</id></properties>
+			<roles><role>founder</role></roles>
+		</contributor>
 		<contributor>
 			<name>Richard Domander</name>
 			<url>https://imagej.net/User:Rdom</url>
